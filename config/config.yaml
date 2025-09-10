@@ -1,0 +1,45 @@
+data:
+  raw_dir: data/raw
+  logs: logs
+  train_file: train.csv
+  test_file: test.csv
+
+task_type: regression
+
+competition:
+  name: skillbox-ml-junior-regression-10
+
+output:
+  eda_report_dir: outputs/eda_report
+
+standard_value:
+  cement:
+    min: 200
+    max: 600
+  water:
+    min: 120
+    max: 220
+  sp_c_pct:
+    min: 0.005
+    max: 0.025
+  fine_aggregate:
+    min: 600
+    max: 800
+  coarse_aggregate:
+    min: 1000
+    max: 1300
+  fly_ash:
+    min: 0
+    max: 200
+  age:
+    min: 1
+    max: 365
+  strength:
+    min: 5
+    max: 100
+  w_c:
+    min: 0.3
+    max: 0.7
+  
+
+

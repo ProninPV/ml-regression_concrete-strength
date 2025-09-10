@@ -1,0 +1,103 @@
+2025-05-26 19:29:45,132 [ERROR] Ошибка при генерации EDA-отчета: name 'Path' is not defined
+Traceback (most recent call last):
+  File "C:\Users\Павел\AppData\Local\Temp\ipykernel_4412\1672985799.py", line 55, in run_eda_report
+    output_dir = Path(config["output"]["eda_report_dir"])
+                 ^^^^
+NameError: name 'Path' is not defined
+2025-05-26 19:33:25,729 [ERROR] Ошибка при генерации EDA-отчета: 'output'
+Traceback (most recent call last):
+  File "C:\Users\Павел\AppData\Local\Temp\ipykernel_4412\1378608599.py", line 55, in run_eda_report
+    output_dir = config["output"]["eda_report_dir"]
+                 ~~~~~~^^^^^^^^^^
+KeyError: 'output'
+2025-05-26 19:34:01,085 [ERROR] Ошибка при генерации EDA-отчета: 'output'
+Traceback (most recent call last):
+  File "C:\Users\Павел\AppData\Local\Temp\ipykernel_4412\1378608599.py", line 55, in run_eda_report
+    output_dir = config["output"]["eda_report_dir"]
+                 ~~~~~~^^^^^^^^^^
+KeyError: 'output'
+2025-05-26 19:35:08,665 [ERROR] Ошибка при генерации EDA-отчета: 'output'
+Traceback (most recent call last):
+  File "C:\Users\Павел\AppData\Local\Temp\ipykernel_4412\1378608599.py", line 55, in run_eda_report
+    output_dir = config["output"]["eda_report_dir"]
+                 ~~~~~~^^^^^^^^^^
+KeyError: 'output'
+2025-05-26 19:37:18,417 [ERROR] Ошибка при генерации EDA-отчета: 'str' object has no attribute 'mkdir'
+Traceback (most recent call last):
+  File "C:\Users\Павел\AppData\Local\Temp\ipykernel_4412\1378608599.py", line 56, in run_eda_report
+    output_dir.mkdir(parents=True, exist_ok=True)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'mkdir'
+2025-05-26 19:38:01,585 [ERROR] Ошибка при генерации EDA-отчета: unsupported operand type(s) for /: 'str' and 'str'
+Traceback (most recent call last):
+  File "C:\Users\Павел\AppData\Local\Temp\ipykernel_4412\554948447.py", line 56, in run_eda_report
+    output_file = output_dir / f"{dataset_name}_eda_report.html"
+                  ~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for /: 'str' and 'str'
+2025-05-26 19:39:45,541 [ERROR] Ошибка при генерации EDA-отчета: 'str' object has no attribute 'exists'
+Traceback (most recent call last):
+  File "C:\Users\Павел\AppData\Local\Temp\ipykernel_4412\3983570420.py", line 58, in run_eda_report
+    if output_file.exists():
+       ^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'exists'
+2025-05-26 19:44:10,753 [INFO] Генерация EDA отчета для 'train'...
+2025-05-26 19:45:21,949 [INFO] Отчёт сохранён: ..\outputs\eda_report\train_eda_report.html
+2025-05-26 19:45:21,958 [INFO] Пропусков в данных не обнаружено.
+2025-05-26 19:45:21,963 [ERROR] Ошибка при генерации EDA-отчета: 'BaseDescription' object has no attribute 'get'
+Traceback (most recent call last):
+  File "C:\Users\Павел\AppData\Local\Temp\ipykernel_4412\1551780951.py", line 82, in run_eda_report
+    warnings = profile.get_description().get("warnings", [])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'BaseDescription' object has no attribute 'get'
+2025-05-26 19:48:00,809 [INFO] Отчёт уже существует: ..\outputs\eda_report\train_eda_report.html. Пропускаем генерацию.
+2025-05-26 19:48:46,275 [INFO] Генерация EDA отчета для 'train'...
+2025-05-26 19:49:46,008 [INFO] Отчёт сохранён: ..\outputs\eda_report\train_eda_report.html
+2025-05-26 19:49:46,014 [INFO] Пропусков в данных не обнаружено.
+2025-05-26 19:49:46,020 [INFO] Предупреждения ydata-profiling отсутствуют.
+2025-05-26 20:12:52,840 [INFO] Отчёт уже существует: ..\outputs\eda_report\train_eda_report.html. Пропускаем генерацию.
+2025-05-26 20:13:08,308 [INFO] Генерация EDA отчета для 'test'...
+2025-05-26 20:13:51,542 [INFO] Отчёт сохранён: ..\outputs\eda_report\test_eda_report.html
+2025-05-26 20:13:51,570 [INFO] Пропусков в данных не обнаружено.
+2025-05-26 20:13:51,578 [INFO] Предупреждения ydata-profiling отсутствуют.
+2025-05-27 18:23:14,085 [INFO] Отчёт уже существует: ..\outputs\eda_report\train_eda_report.html. Пропускаем генерацию.
+2025-05-27 18:23:30,500 [INFO] Отчёт уже существует: ..\outputs\eda_report\test_eda_report.html. Пропускаем генерацию.
+2025-05-30 10:12:12,655 [INFO] Отчёт уже существует: ..\outputs\eda_report\train_eda_report.html. Пропускаем генерацию.
+2025-05-30 10:12:32,274 [INFO] Отчёт уже существует: ..\outputs\eda_report\test_eda_report.html. Пропускаем генерацию.
+2025-06-02 12:40:40,508 [INFO] Отчёт уже существует: ..\outputs\eda_report\train_eda_report.html. Пропускаем генерацию.
+2025-06-02 12:40:59,151 [INFO] Отчёт уже существует: ..\outputs\eda_report\test_eda_report.html. Пропускаем генерацию.
+2025-06-03 10:53:49,267 [INFO] Отчёт уже существует: ..\outputs\eda_report\train_eda_report.html. Пропускаем генерацию.
+2025-06-03 10:54:09,074 [INFO] Отчёт уже существует: ..\outputs\eda_report\test_eda_report.html. Пропускаем генерацию.
+2025-06-03 11:59:48,497 [INFO] Генерация EDA отчета для 'train'...
+2025-06-03 12:01:38,171 [INFO] Отчёт сохранён: ..\outputs\eda_report\train_eda_report.html
+2025-06-03 12:01:38,179 [INFO] Пропусков в данных не обнаружено.
+2025-06-03 12:01:38,184 [INFO] Предупреждения ydata-profiling отсутствуют.
+2025-06-03 12:06:28,873 [INFO] Генерация EDA отчета для 'train'...
+2025-06-03 12:08:18,744 [INFO] Отчёт сохранён: ..\outputs\eda_report\train_eda_report.html
+2025-06-03 12:08:18,751 [INFO] Пропусков в данных не обнаружено.
+2025-06-03 12:08:18,756 [INFO] Предупреждения ydata-profiling отсутствуют.
+2025-06-03 12:12:48,057 [INFO] Отчёт уже существует: ..\outputs\eda_report\train_eda_report.html. Пропускаем генерацию.
+2025-06-03 12:23:22,728 [INFO] Отчёт уже существует: ..\outputs\eda_report\train_eda_report.html. Пропускаем генерацию.
+2025-06-04 15:12:48,670 [INFO] Отчёт уже существует: ..\outputs\eda_report\train_eda_report.html. Пропускаем генерацию.
+2025-06-05 08:42:09,831 [INFO] Генерация EDA отчета для 'train'...
+2025-06-05 08:43:41,196 [INFO] Отчёт сохранён: ..\outputs\eda_report\train_eda_report.html
+2025-06-05 08:43:41,203 [INFO] Пропусков в данных не обнаружено.
+2025-06-05 08:43:41,208 [INFO] Предупреждения ydata-profiling отсутствуют.
+2025-09-03 17:37:02,355 [INFO] Генерация EDA отчета для 'train'...
+2025-09-03 17:37:02,373 [ERROR] Ошибка при генерации EDA-отчета: name 'ProfileReport' is not defined
+Traceback (most recent call last):
+  File "D:\Skills\Kaggle\ml-regression_concrete-strength\src\utils\ml_utils.py", line 246, in eda_report
+    profile = ProfileReport(data, title=f"{dataset_name} EDA Report", explorative=True)
+              ^^^^^^^^^^^^^
+NameError: name 'ProfileReport' is not defined
+2025-09-03 17:40:10,432 [INFO] Генерация EDA отчета для 'train'...
+2025-09-03 17:41:27,714 [INFO] Отчёт сохранён: ..\outputs\eda_report\train_eda_report.html
+2025-09-03 17:41:27,725 [INFO] Пропусков в данных не обнаружено.
+2025-09-03 17:41:27,762 [INFO] Предупреждения ydata-profiling отсутствуют.
+2025-09-04 13:28:33,059 [INFO] Генерация EDA отчета для 'train'...
+2025-09-04 13:29:53,509 [INFO] Отчёт сохранён: ..\outputs\eda_report\train_eda_report.html
+2025-09-04 13:29:53,528 [INFO] Пропусков в данных не обнаружено.
+2025-09-04 13:29:53,534 [INFO] Предупреждения ydata-profiling отсутствуют.
+2025-09-04 13:45:52,766 [INFO] Генерация EDA отчета для 'train'...
+2025-09-04 13:47:25,259 [INFO] Отчёт сохранён: ..\outputs\eda_report\train_eda_report.html
+2025-09-04 13:47:25,264 [INFO] Пропусков в данных не обнаружено.
+2025-09-04 13:47:25,269 [INFO] Предупреждения ydata-profiling отсутствуют.
