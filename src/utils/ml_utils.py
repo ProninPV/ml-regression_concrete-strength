@@ -436,3 +436,155 @@ def visualize_feature_analysis(analysis_df: pd.DataFrame) -> None:
     
     plt.tight_layout()
     plt.show()
+
+
+def plot_feature_trends(df: pd.DataFrame,
+                        config: Dict[str, Any],
+                        target: str = 'Strength',
+                        figsize: Tuple[int, int] = (16, 12),
+                        alpha: float = 0.2) -> pd.DataFrame:
+    """
+    Строит scatter plot для каждого признака с наложением различных трендов.
+    Возвращает датасет с лучшими преобразованиями и R² scores.
+    
+    Parameters:
+    -----------
+    df : pandas.DataFrame
+        Исходный датафрейм с данными
+    features : list
+        Список признаков для анализа
+    target : str
+        Название целевой переменной
+    figsize : tuple
+        Размер figure для plotting
+    alpha : float
+        Пороговое значение для выбора линейного тренда (0.2 = 20%)
+    """
+
+    # Формирование списка признаков
+    features = df.select_dtypes(include=[np.number]).columns
+    features = [f for f in features if f != target]
+    
+    # Определяем функции для трендов
+    def linear_func(x, a, b):
+        return a * x + b
+    
+    def log_func(x, a, b):
+        return a * np.log(x + 1e-10) + b
+    
+    def sqrt_func(x, a, b):
+        return a * np.sqrt(x) + b
+    
+    def reciprocal_func(x, a, b):
+        return a / (x + 1e-10) + b
+    
+    def square_func(x, a, b):
+        return a * (x ** 2) + b
+    
+    # Создаем grid subplots
+    n_features = len(features)
+    n_cols = 2
+    n_rows = (n_features + n_cols - 1) // n_cols
+    
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=figsize)
+    axes = axes.flatten()
+    
+    # Цвета для разных трендов
+    colors = config['trend_settings']['colors']
+    trend_names = config['trend_settings']['names']
+    trend_funcs = [linear_func, log_func, sqrt_func, reciprocal_func, square_func]
+    
+    # Создаем датасет для результатов
+    results_data = []
+    
+    for i, feature in enumerate(features):
+        if i >= len(axes):
+            break
+            
+        ax = axes[i]
+        x_data = df[feature].values
+        y_data = df[target].values
+        
+        # Scatter plot
+        ax.scatter(x_data, y_data, alpha=0.6, s=30, color='gray', label='Data')
+        ax.set_xlabel(feature)
+        ax.set_ylabel(target)
+        ax.set_title(f'{feature} vs {target}')
+        
+        # Сортируем данные для построения трендов
+        sort_idx = np.argsort(x_data)
+        x_sorted = x_data[sort_idx]
+        y_sorted = y_data[sort_idx]
+        
+        # Строим различные тренды
+        r2_scores = {}
+        
+        for j, (func, color, name) in enumerate(zip(trend_funcs, colors, trend_names)):
+            try:
+                # Подбираем параметры для функции тренда
+                popt, _ = curve_fit(func, x_sorted, y_sorted, maxfev=5000)
+                
+                # Предсказываем значения для тренда
+                y_trend = func(x_sorted, *popt)
+                
+                # Вычисляем R² score
+                r2 = r2_score(y_sorted, y_trend)
+                r2_scores[name] = r2
+                
+                # Строим тренд
+                ax.plot(x_sorted, y_trend, color=color, linewidth=2, 
+                       label=f'{name} (R²={r2:.3f})', alpha=0.8)
+                
+            except Exception as e:
+                # Пропускаем тренды, которые не удается построить
+                r2_scores[name] = -np.inf
+                continue
+        
+        # Определяем лучшее преобразование
+        best_trend_name = max(r2_scores.items(), key=lambda x: x[1])[0]
+        best_r2 = r2_scores[best_trend_name]
+        linear_r2 = r2_scores.get('Linear', -np.inf)
+        
+        # Если линейный тренд хуже лучшего менее чем на alpha, выбираем линейный
+        if best_trend_name != 'Linear' and linear_r2 >= best_r2 * (1 - alpha):
+            final_best_trend = 'Linear'
+            final_best_r2 = linear_r2
+        else:
+            final_best_trend = best_trend_name
+            final_best_r2 = best_r2
+        
+        # Добавляем данные в результаты
+        results_data.append({
+            'feature': feature,
+            'best_transformation': final_best_trend,
+            'best_r2_score': final_best_r2,
+            'linear_r2_score': linear_r2,
+            'log_r2_score': r2_scores.get('Log', np.nan),
+            'sqrt_r2_score': r2_scores.get('Sqrt', np.nan),
+            'reciprocal_r2_score': r2_scores.get('1/x', np.nan),
+            'square_r2_score': r2_scores.get('x²', np.nan)
+        })
+        
+        # Добавляем легенду
+        ax.legend(loc='best', fontsize=8)
+        
+        # Добавляем аннотацию с лучшим трендом
+        ax.annotate(f'Best: {final_best_trend} (R²={final_best_r2:.3f})',
+                   xy=(0.05, 0.95), xycoords='axes fraction',
+                   fontsize=9, bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.8))
+        
+        # Добавляем корреляции в заголовок
+        pearson_corr = np.corrcoef(x_data, y_data)[0, 1]
+        spearman_corr = pd.Series(x_data).corr(pd.Series(y_data), method='spearman')
+        ax.set_title(f'{feature} vs {target}\nPearson: {pearson_corr:.3f}, Spearman: {spearman_corr:.3f}')
+    
+    # Скрываем пустые subplots
+    for j in range(i + 1, len(axes)):
+        axes[j].set_visible(False)
+    
+    plt.tight_layout()
+    plt.show()
+    
+    # Создаем и возвращаем датасет с результатами
+    results_df = pd.DataFrame(results_data)
+    return results_df

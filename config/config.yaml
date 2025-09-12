@@ -40,6 +40,7 @@ standard_value:
   w_c:
     min: 0.3
     max: 0.7
-  
-
-
+    
+trend_settings: 
+    colors: ['red', 'blue', 'green', 'orange', 'purple']
+    names: ['Linear', 'Log', 'Sqrt', '1/x', 'x²']   
