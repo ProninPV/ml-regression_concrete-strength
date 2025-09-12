@@ -12,6 +12,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from typing import List, Any, Optional, Tuple, Dict
 from datetime import datetime
+from scipy.optimize import curve_fit
+from sklearn.metrics import r2_score
+from scipy.stats import pearsonr, spearmanr, kurtosis, skew
 
 
 def load_config(config_path: str = None):
@@ -326,3 +329,110 @@ def save_outliers_report(summary_df: pd.DataFrame,
 
     except Exception as e:
         print(f"Ошибка при сохранении отчёта: {e}")
+
+
+def create_feature_analysis(df: pd.DataFrame, target_column: pd.Series) -> pd.DataFrame:
+    """
+    Создает комплексный датафрейм для анализа признаков. Вычисляет коэффициенты Пирсона, Спирмена
+    для оригинальных данных, а также значения асимметриb и эксцесса 
+    
+    Parameters:
+    -----------
+    df : pandas.DataFrame
+        Исходный датафрейм с признаками и целевой переменной
+    target_column : pd.Series
+        Целевая переменная
+    
+    Returns:
+    --------
+    pandas.DataFrame
+        Датафрейм с метриками для каждого признака
+    """
+    
+    # Исключаем ненужные колонки
+    features = df.select_dtypes(include='number').columns.tolist()
+    
+    # Создаем список для хранения результатов
+    results = []
+    target_data = target_column
+    
+    for feature in features:
+        feature_data = df[feature]
+                
+        # Базовые статистики
+        pearson_corr, pearson_p = pearsonr(feature_data, target_data)
+        spearman_corr, spearman_p = spearmanr(feature_data, target_data)
+        skewness = skew(feature_data)
+        kurtosis_val = kurtosis(feature_data)        
+              
+        # Собираем результаты
+        results.append({
+            'feature': feature,
+            'pearson_corr': pearson_corr,
+            'spearman_corr': spearman_corr,
+            'spearman_p_value': round(spearman_p, 4),
+            'skewness': skewness,
+            'kurtosis': kurtosis_val            
+        })
+    
+    # Создаем датафрейм
+    analysis_df = pd.DataFrame(results)
+    
+    # Сортируем по абсолютной корреляции Спирмена
+    analysis_df = analysis_df.sort_values('spearman_corr', ascending=False)
+    
+    return analysis_df.reset_index(drop=True)
+
+
+def visualize_feature_analysis(analysis_df: pd.DataFrame) -> None:
+    """
+    Визуализирует сравнение корреляций Пирсона и Спирмена для каждого признака с целевой переменной и
+    значения асимметрии и эксцесса для признаков.
+    
+    Parameters:
+    -----------
+    analysis_df : pandas.DataFrame
+        Датафрейм с результатами анализа признаков, содержащий колонки:
+        - feature: названия признаков
+        - pearson_corr: коэффициенты корреляции Пирсона
+        - spearman_corr: коэффициенты корреляции Спирмена  
+        - skewness: значения асимметрии
+        - kurtosis: значения эксцесса
+    
+    Returns:
+    --------
+    None
+        Функция отображает графики и не возвращает значений
+    """
+    
+    plt.figure(figsize=(15, 6))
+    
+    # График 1: Сравнение корреляций
+    plt.subplot(1, 2, 1)
+    indices = range(len(analysis_df))
+    width = 0.35
+    plt.bar([i - width/2 for i in indices], analysis_df['pearson_corr'], 
+            width, label='Pearson', alpha=0.7)
+    plt.bar([i + width/2 for i in indices], analysis_df['spearman_corr'], 
+            width, label='Spearman', alpha=0.7)
+    plt.xticks(indices, analysis_df['feature'], rotation=90, ha='right')
+    plt.legend()
+    plt.title('Сравнение корреляций Пирсона и Спирмена')
+    plt.grid(True, alpha=0.3)
+    
+    # График 2: Распределение признаков (skewness + kurtosis)
+    plt.subplot(1, 2, 2)
+    plt.scatter(analysis_df['skewness'], analysis_df['kurtosis'], 
+               s=100, alpha=0.7)
+    for i, row in analysis_df.iterrows():
+        plt.annotate(row['feature'], (row['skewness'], row['kurtosis']),
+                    xytext=(5, 5), textcoords='offset points', fontsize=8)
+    plt.axvline(0, color='gray', linestyle='--', alpha=0.5)
+    plt.axhline(0, color='gray', linestyle='--', alpha=0.5)
+    plt.xlabel('Skewness')
+    plt.ylabel('Kurtosis')
+    plt.title('Распределение признаков (skewness vs kurtosis)')
+    plt.grid(True, alpha=0.3)    
+    
+    plt.tight_layout()
+    plt.show()
