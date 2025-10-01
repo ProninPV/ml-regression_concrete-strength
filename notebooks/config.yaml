@@ -10,10 +10,13 @@ output:
   eda_report_dir: outputs/eda_report
 processed_files:
   latest_cleaned:
-    csv: data\processed\eda_data_20251001_1022.csv
-    parquet: data\processed\eda_data_20251001_1022.parquet
-    pkl: data\processed\eda_data_20251001_1022.pkl
-    timestamp: '20251001_1022'
+    csv: data\processed\eda_data_20251001_1017.csv
+    parquet: data\processed\eda_data_20251001_1017.parquet
+    pkl: data\processed\eda_data_20251001_1017.pkl
+    shape: !!python/tuple
+    - 781
+    - 11
+    timestamp: '20251001_1017'
 standard_value:
   age:
     max: 365

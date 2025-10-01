@@ -16,7 +16,7 @@ from src.utils import config_loader, ml_utils
 
 def download_and_extract_competition(competition_name: str, download_path: str):
     """
-    Скачивает данные соревнования и распаковывает zip-архив в указанную папку.
+    Скачивает данные соревнования kaggle и распаковывает zip-архив в указанную папку.
     """
     print(f"[⧗] Загружаю данные соревнования {competition_name} в {download_path} ...")
 
