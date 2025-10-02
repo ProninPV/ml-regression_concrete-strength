@@ -677,3 +677,80 @@ def highlight_high_vif(vif_data: pd.DataFrame,
                   .format({'VIF': '{:.2f}'}))
     
     return styled_vif
+
+
+def save_cleaned_data(df: pd.DataFrame, config) -> dict:
+    """
+    Сохраняет очищенные данные в multiple formats (Parquet, CSV, Pickle)
+    с добавлением даты в имя файла.
+    
+    Parameters:
+    -----------
+    df : pd.DataFrame
+        Очищенный DataFrame для сохранения
+    config : dict
+        Словарь с конфигурацией проекта, загруженный из config.yaml
+        
+    Returns:
+    --------
+    dict: Словарь с путями к сохраненным файлам
+    """    
+   
+    # Получение пути для сохранения
+    # Получаем корень проекта от текущей рабочей директории
+    project_root = Path(__file__).resolve().parent.parent.parent
+
+    base_path = project_root / config['data']['processed_dir']
+    
+    base_path.mkdir(parents=True, exist_ok=True)
+    
+    # Создание имени файла с датой
+    current_date = datetime.now().strftime('%Y%m%d_%H%M')
+    filename_base = f"eda_data_{current_date}"
+    
+    # Пути к файлам
+    file_paths = {
+        'parquet': base_path / f"{filename_base}.parquet",
+        'csv': base_path / f"{filename_base}.csv", 
+        'pkl': base_path / f"{filename_base}.pkl"
+    }
+    
+    # Сохранение в разных форматах
+    try:
+        # 1. Parquet (основной формат)
+        df.to_parquet(
+            file_paths['parquet'], 
+            index=False, 
+            engine='pyarrow',
+            compression='snappy'
+        )
+        
+        # 2. CSV (для отладки)
+        df.to_csv(
+            file_paths['csv'],
+            index=False,
+            encoding='utf-8'
+        )
+        
+        # 3. Pickle (для воспроизводимости)
+        df.to_pickle(file_paths['pkl'])
+        
+        # Логирование
+        logging.info(f"Данные успешно сохранены:")
+        logging.info(f"Parquet: {file_paths['parquet']}")
+        logging.info(f"CSV: {file_paths['csv']}")
+        logging.info(f"Pickle: {file_paths['pkl']}")
+        
+        # Сохранение информации о файлах в конфиг
+        config['processed_files']['latest_cleaned'] = {
+            'parquet': str(file_paths['parquet']),
+            'csv': str(file_paths['csv']),
+            'pkl': str(file_paths['pkl']),
+            'timestamp': current_date
+        }
+               
+        return config
+        
+    except Exception as e:
+        logging.error(f"Ошибка при сохранении данных: {e}")
+        raise

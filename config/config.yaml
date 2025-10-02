@@ -1,3 +1,7 @@
+binary_features:
+  from_zeros:
+  - Blast Furnace Slag
+  - Superplasticizer
 competition:
   name: skillbox-ml-junior-regression-10
 data:
@@ -10,10 +14,10 @@ output:
   eda_report_dir: outputs/eda_report
 processed_files:
   latest_cleaned:
-    csv: data\processed\eda_data_20251001_1022.csv
-    parquet: data\processed\eda_data_20251001_1022.parquet
-    pkl: data\processed\eda_data_20251001_1022.pkl
-    timestamp: '20251001_1022'
+    csv: D:\Skills\Kaggle\ml-regression_concrete-strength\data\processed\eda_data_20251002_1406.csv
+    parquet: D:\Skills\Kaggle\ml-regression_concrete-strength\data\processed\eda_data_20251002_1406.parquet
+    pkl: D:\Skills\Kaggle\ml-regression_concrete-strength\data\processed\eda_data_20251002_1406.pkl
+    timestamp: '20251002_1406'
 standard_value:
   age:
     max: 365
