@@ -1,0 +1,6 @@
+1. Переименован data_loading.py в downloader.py
+2. Создание скрипта models/modeling.py
+3. Перемещение функции check_models_by_nepv в modeling.py
+4. Создан скрипт engineer.py
+5. В скрипт engineer.py перенесены функции: 
+6. Обновленны ссылки на функции в 03_Data_loading_and_preprocessing.ipynb
