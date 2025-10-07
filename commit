@@ -1,6 +1,8 @@
-1. Переименован data_loading.py в downloader.py
-2. Создание скрипта models/modeling.py
-3. Перемещение функции check_models_by_nepv в modeling.py
-4. Создан скрипт engineer.py
-5. В скрипт engineer.py перенесены функции: 
-6. Обновленны ссылки на функции в 03_Data_loading_and_preprocessing.ipynb
+1. В downloader.py добавлена проверка есть ли уже скаченые и распакованные файлы
+2. Создан tests/data/test_downloader.py
+3. В test_downloader.py реализованы тесты:
+		- test_download_success
+		- test_creates_missing_directory
+		- test_handles_kaggle_not_found
+		- test_main_function
+		
