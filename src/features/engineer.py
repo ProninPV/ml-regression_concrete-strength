@@ -22,6 +22,11 @@ def create_feature_analysis(data: pd.DataFrame) -> pd.DataFrame:
     pandas.DataFrame
         Датафрейм с метриками для каждого признака
     """
+    # Проверка на пустые данные
+    if data.empty or len(data) == 0 or 'Strength' not in data.columns:
+        return pd.DataFrame(columns=['feature', 'pearson_corr', 'spearman_corr', 
+                                   'spearman_p_value', 'skewness', 'kurtosis'])
+    
     # Извлекаем таргет из исходного датасета
     df = data.drop(columns=["Strength"])
     target_column = data["Strength"]
@@ -55,6 +60,10 @@ def create_feature_analysis(data: pd.DataFrame) -> pd.DataFrame:
     # Создаем датафрейм
     analysis_df = pd.DataFrame(results)
     
+    # Проверка перед сортировкой
+    if analysis_df.empty:
+        return analysis_df
+    
     # Сортируем по абсолютной корреляции Спирмена
     analysis_df = analysis_df.sort_values('spearman_corr', ascending=False)
     
@@ -75,6 +84,10 @@ def check_multicollinearity(data: pd.DataFrame,
     Returns:
     pd.DataFrame: DataFrame с признаками и их VIF значениями, отсортированный по убыванию VIF.
     """
+    # Проверка на пустые данные
+    if data.empty or len(data) == 0 or 'Strength' not in data.columns:
+        return pd.DataFrame(columns=['Feature', 'VIF'])
+    
     # Извлекаем таргет из исходного датасета
     df = data.drop(columns=["Strength"])
     target_data = data["Strength"]
