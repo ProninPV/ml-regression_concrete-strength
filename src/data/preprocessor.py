@@ -165,7 +165,8 @@ def preliminary_data_cleaning(df: pd.DataFrame) -> pd.DataFrame:
         Очищенный DataFrame с удаленным столбцом 'Id' и дубликатами строк
     """
     # Удаляем неинформативный столбец ID
-    df = df.drop(columns=["Id"])
+    if "Id" in df.columns:
+        df = df.drop(columns=["Id"])
 
     # Удаляем дубликаты строк
     df = df.drop_duplicates()
@@ -173,3 +174,35 @@ def preliminary_data_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def checking_order_of_features(df_train: pd.DataFrame,
+                               df_test: pd.DataFrame) -> bool:
+    """
+    Проверяет совпадение порядка и состава признаков в тренировочном и тестовом наборах данных.
+    
+    Parameters
+    ----------
+    df_train : pd.DataFrame
+        Тренировочный датафрейм, содержащий целевую переменную "Strength"
+    df_test : pd.DataFrame
+        Тестовый датафрейм
+    
+    Returns
+    -------
+    bool
+        True если порядок признаков совпадает, False если отличается
+    """
+    # Создание массива из признаков и массива из целевой переменной
+    X = df_train.drop(columns=["Strength"])
+
+    # Сравниваем порядок признаков в тренировочном и тестовом датасете
+    train_features = list(X.columns)
+    test_features = list(df_test.columns)
+        
+    if list(X.columns) == list(df_test.columns):
+        print("Порядок признаков совпадает")
+        return True
+    else:
+        print("Порядок признаков отличается")
+        print(f"Признаки train: {train_features}")
+        print(f"Признаки test: {test_features}")
+        return False       

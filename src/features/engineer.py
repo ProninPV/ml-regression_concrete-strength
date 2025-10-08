@@ -7,24 +7,25 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 from statsmodels.tools.tools import add_constant
 
 
-def create_feature_analysis(df: pd.DataFrame, target_column: pd.Series) -> pd.DataFrame:
+def create_feature_analysis(data: pd.DataFrame) -> pd.DataFrame:
     """
     Создает комплексный датафрейм для анализа признаков. Вычисляет коэффициенты Пирсона, Спирмена
     для оригинальных данных, а также значения асимметриb и эксцесса 
     
     Parameters:
     -----------
-    df : pandas.DataFrame
+    data : pandas.DataFrame
         Исходный датафрейм с признаками и целевой переменной
-    target_column : pd.Series
-        Целевая переменная
     
     Returns:
     --------
     pandas.DataFrame
         Датафрейм с метриками для каждого признака
     """
-    
+    # Извлекаем таргет из исходного датасета
+    df = data.drop(columns=["Strength"])
+    target_column = data["Strength"]
+
     # Исключаем ненужные колонки
     features = df.select_dtypes(include='number').columns.tolist()
     
@@ -60,26 +61,25 @@ def create_feature_analysis(df: pd.DataFrame, target_column: pd.Series) -> pd.Da
     return analysis_df.reset_index(drop=True)
 
 
-def check_multicollinearity(df: pd.DataFrame,
-                            target_column: pd.Series, 
+def check_multicollinearity(data: pd.DataFrame,                            
                             threshold: int = 10,
                             plot_heatmap: bool = True) -> pd.DataFrame:
     """
     Проверяет мультиколлинеарность для списка признаков в DataFrame.
 
     Parameters:
-    df: Исходный DataFrame с данными.
-    target_column: Целевая переменная.
+    data: Исходный DataFrame с данными.    
     threshold: Пороговое значение VIF для выделения проблемных признаков. По умолчанию 10.
     plot_heatmap: Строить ли тепловую карту корреляций. По умолчанию True.
 
     Returns:
     pd.DataFrame: DataFrame с признаками и их VIF значениями, отсортированный по убыванию VIF.
     """
-
+    # Извлекаем таргет из исходного датасета
+    df = data.drop(columns=["Strength"])
+    target_data = data["Strength"]
     features = df.select_dtypes(include='number').columns.tolist()
-    target_data = target_column
-    
+        
     # Шаг 1: Матрица корреляций и тепловая карта
     if plot_heatmap:
         # Вычисляем матрицу корреляций только для нужных признаков

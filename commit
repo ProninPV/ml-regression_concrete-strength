@@ -1,8 +1,0 @@
-1. В downloader.py добавлена проверка есть ли уже скаченые и распакованные файлы
-2. Создан tests/data/test_downloader.py
-3. В test_downloader.py реализованы тесты:
-		- test_download_success
-		- test_creates_missing_directory
-		- test_handles_kaggle_not_found
-		- test_main_function
-		
