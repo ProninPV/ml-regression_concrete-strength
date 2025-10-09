@@ -18,8 +18,185 @@ from src.analysis.eda import (
     generate_profile_report,
     eda_report,
     detect_outliers, 
-    analyze_zeros, 
+    analyze_zeros,
+    calculate_trend_metrics,  # Добавлен импорт новых функций
+    select_best_transformations
 )
+
+
+class TestCalculateTrendMetrics:
+    """Тесты для функции calculate_trend_metrics"""
+    
+    @pytest.fixture
+    def sample_data(self):
+        """Фикстура с тестовыми данными"""
+        np.random.seed(42)
+        n_samples = 50
+        
+        df = pd.DataFrame({
+            'feature1': np.linspace(1, 10, n_samples) + np.random.normal(0, 0.5, n_samples),
+            'feature2': np.random.exponential(2, n_samples),
+            'target': np.linspace(5, 15, n_samples) + np.random.normal(0, 1, n_samples)
+        })
+        
+        config = {
+            'trend_settings': {
+                'names': ['Linear', 'Log', 'Sqrt', '1/x', 'x²']
+            }
+        }
+        
+        return df, config
+    
+    def test_calculate_trend_metrics_basic(self, sample_data):
+        """Тест базового вычисления метрик трендов"""
+        df, config = sample_data
+        features = ['feature1', 'feature2']
+        target = 'target'
+        
+        result = calculate_trend_metrics(df, features, target, config)
+        
+        # Проверяем структуру результата
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == len(features)
+        assert 'feature' in result.columns
+        assert 'linear_r2_score' in result.columns
+        assert 'log_r2_score' in result.columns
+        assert 'sqrt_r2_score' in result.columns
+        assert 'reciprocal_r2_score' in result.columns
+        assert 'square_r2_score' in result.columns
+        
+        # Проверяем, что все признаки присутствуют
+        result_features = result['feature'].tolist()
+        assert 'feature1' in result_features
+        assert 'feature2' in result_features
+    
+    def test_calculate_trend_metrics_single_feature(self, sample_data):
+        """Тест с одним признаком"""
+        df, config = sample_data
+        features = ['feature1']
+        target = 'target'
+        
+        result = calculate_trend_metrics(df, features, target, config)
+        
+        assert len(result) == 1
+        assert result.iloc[0]['feature'] == 'feature1'
+    
+    def test_calculate_trend_metrics_empty_features(self, sample_data):
+        """Тест с пустым списком признаков"""
+        df, config = sample_data
+        features = []
+        target = 'target'
+        
+        result = calculate_trend_metrics(df, features, target, config)
+        
+        assert len(result) == 0
+        assert isinstance(result, pd.DataFrame)
+    
+    def test_calculate_trend_metrics_invalid_feature(self, sample_data):
+        """Тест с несуществующим признаком"""
+        df, config = sample_data
+        features = ['nonexistent_feature']
+        target = 'target'
+        
+        # Ожидаем KeyError при попытке доступа к несуществующей колонке
+        with pytest.raises(KeyError, match="'nonexistent_feature'"):
+            calculate_trend_metrics(df, features, target, config)
+
+
+class TestSelectBestTransformations:
+    """Тесты для функции select_best_transformations"""
+    
+    @pytest.fixture
+    def sample_metrics_df(self):
+        """Фикстура с тестовыми метриками"""
+        return pd.DataFrame({
+            'feature': ['feature1', 'feature2', 'feature3'],
+            'linear_r2_score': [0.8, 0.6, 0.9],
+            'log_r2_score': [0.75, 0.7, 0.85],
+            'sqrt_r2_score': [0.78, 0.65, 0.88],
+            'reciprocal_r2_score': [0.5, 0.4, 0.6],
+            'square_r2_score': [0.82, 0.55, 0.87]
+        })
+    
+    def test_select_best_transformations_basic(self, sample_metrics_df):
+        """Тест базового выбора преобразований"""
+        result = select_best_transformations(sample_metrics_df, alpha=0.2)
+        
+        # Проверяем структуру результата
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == len(sample_metrics_df)
+        assert 'best_transformation' in result.columns
+        assert 'best_r2_score' in result.columns
+        
+        # Проверяем, что все исходные колонки сохранились
+        for col in sample_metrics_df.columns:
+            assert col in result.columns
+    
+    def test_select_best_transformations_linear_preference(self, sample_metrics_df):
+        """Тест предпочтения линейного тренда при близких значениях"""
+        # Создаем данные где лучший тренд не линейный, но близок к линейному
+        custom_metrics = pd.DataFrame({
+            'feature': ['test_feature'],
+            'linear_r2_score': [0.8],
+            'log_r2_score': [0.82],  # Лучший, но близко к линейному
+            'sqrt_r2_score': [0.7],
+            'reciprocal_r2_score': [0.5],
+            'square_r2_score': [0.6]
+        })
+        
+        # При alpha=0.2, 0.8 >= 0.82 * 0.8 = 0.656 -> выбираем линейный
+        result = select_best_transformations(custom_metrics, alpha=0.2)
+        
+        assert result.iloc[0]['best_transformation'] == 'Linear'
+        assert result.iloc[0]['best_r2_score'] == 0.8
+    
+    def test_select_best_transformations_non_linear_selection(self, sample_metrics_df):
+        """Тест выбора нелинейного тренда когда он значительно лучше"""
+        # Создаем данные где нелинейный тренд значительно лучше
+        custom_metrics = pd.DataFrame({
+            'feature': ['test_feature'],
+            'linear_r2_score': [0.5],
+            'log_r2_score': [0.9],  # Значительно лучше линейного
+            'sqrt_r2_score': [0.6],
+            'reciprocal_r2_score': [0.4],
+            'square_r2_score': [0.7]
+        })
+        
+        result = select_best_transformations(custom_metrics, alpha=0.2)
+        
+        assert result.iloc[0]['best_transformation'] == 'Log'
+        assert result.iloc[0]['best_r2_score'] == 0.9
+    
+    def test_select_best_transformations_different_alpha(self, sample_metrics_df):
+        """Тест с разными значениями alpha"""
+        custom_metrics = pd.DataFrame({
+            'feature': ['test_feature'],
+            'linear_r2_score': [0.7],
+            'log_r2_score': [0.8],  # Лучший
+            'sqrt_r2_score': [0.6],
+            'reciprocal_r2_score': [0.4],
+            'square_r2_score': [0.5]
+        })
+        
+        # При alpha=0.1, 0.7 >= 0.8 * 0.9 = 0.72 -> False, выбираем Log
+        result_alpha_01 = select_best_transformations(custom_metrics, alpha=0.1)
+        assert result_alpha_01.iloc[0]['best_transformation'] == 'Log'
+        
+        # При alpha=0.3, 0.7 >= 0.8 * 0.7 = 0.56 -> True, выбираем Linear
+        result_alpha_03 = select_best_transformations(custom_metrics, alpha=0.3)
+        assert result_alpha_03.iloc[0]['best_transformation'] == 'Linear'
+    
+    def test_select_best_transformations_empty_dataframe(self):
+        """Тест с пустым DataFrame"""
+        empty_df = pd.DataFrame(columns=[
+            'feature', 'linear_r2_score', 'log_r2_score', 
+            'sqrt_r2_score', 'reciprocal_r2_score', 'square_r2_score'
+        ])
+        
+        result = select_best_transformations(empty_df, alpha=0.2)
+        
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 0
 
 
 class TestValidateEDAConfig:

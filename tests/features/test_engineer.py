@@ -11,8 +11,177 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from src.features.engineer import (
     create_feature_analysis, 
     check_multicollinearity, 
-    highlight_high_vif
+    highlight_high_vif,
+    plot_feature_trends_orchestrator  # Добавлен импорт новой функции
 )
+
+
+class TestPlotFeatureTrendsOrchestrator:
+    """Тесты для функции plot_feature_trends_orchestrator"""
+    
+    @pytest.fixture
+    def sample_data(self):
+        """Фикстура с примером данных для тестирования"""
+        np.random.seed(42)
+        n_samples = 50
+        
+        return pd.DataFrame({
+            'Cement': np.random.normal(250, 50, n_samples),
+            'Water': np.random.normal(180, 20, n_samples),
+            'Age': np.random.lognormal(2, 1, n_samples),
+            'Strength': np.random.normal(35, 10, n_samples)
+        })
+    
+    @pytest.fixture
+    def sample_config(self):
+        """Фикстура с конфигурацией"""
+        return {
+            'trend_settings': {
+                'names': ['Linear', 'Log', 'Sqrt', '1/x', 'x²'],
+                'colors': ['red', 'blue', 'green', 'orange', 'purple']
+            }
+        }
+    
+    @patch('src.features.engineer.calculate_trend_metrics')
+    @patch('src.features.engineer.select_best_transformations')
+    @patch('src.features.engineer.plot_feature_trends')
+    def test_plot_feature_trends_orchestrator_basic(self, mock_plot, mock_select, mock_calculate, sample_data, sample_config):
+        """Тест базового вызова функции"""
+        # Настраиваем моки
+        mock_metrics_df = pd.DataFrame({
+            'feature': ['Cement', 'Water', 'Age'],
+            'linear_r2_score': [0.8, 0.6, 0.7]
+        })
+        mock_results_df = pd.DataFrame({
+            'feature': ['Cement', 'Water', 'Age'],
+            'best_transformation': ['Linear', 'Log', 'Sqrt'],
+            'best_r2_score': [0.8, 0.6, 0.7]
+        })
+        
+        mock_calculate.return_value = mock_metrics_df
+        mock_select.return_value = mock_results_df
+        
+        # Вызываем функцию
+        result = plot_feature_trends_orchestrator(sample_data, sample_config)
+        
+        # Проверяем вызовы
+        mock_calculate.assert_called_once()
+        mock_select.assert_called_once()
+        mock_plot.assert_called_once()
+        
+        # Проверяем результат
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 3
+    
+    @patch('src.features.engineer.calculate_trend_metrics')
+    @patch('src.features.engineer.select_best_transformations')
+    @patch('src.features.engineer.plot_feature_trends')
+    def test_plot_feature_trends_orchestrator_custom_parameters(self, mock_plot, mock_select, mock_calculate, sample_data, sample_config):
+        """Тест с пользовательскими параметрами"""
+        # Настраиваем моки
+        mock_metrics_df = pd.DataFrame({'feature': ['Cement'], 'linear_r2_score': [0.8]})
+        mock_results_df = pd.DataFrame({
+            'feature': ['Cement'],
+            'best_transformation': ['Linear'],
+            'best_r2_score': [0.8]
+        })
+        
+        mock_calculate.return_value = mock_metrics_df
+        mock_select.return_value = mock_results_df
+        
+        # Вызываем функцию с кастомными параметрами
+        result = plot_feature_trends_orchestrator(
+            sample_data, 
+            sample_config, 
+            target='Strength',
+            figsize=(20, 15),
+            alpha=0.3
+        )
+        
+        # Проверяем что функции вызваны с правильными параметрами
+        mock_calculate.assert_called_once()
+        mock_select.assert_called_once_with(mock_metrics_df, 0.3)
+        mock_plot.assert_called_once()
+        
+        assert isinstance(result, pd.DataFrame)
+    
+    @patch('src.features.engineer.calculate_trend_metrics')
+    @patch('src.features.engineer.select_best_transformations')
+    @patch('src.features.engineer.plot_feature_trends')
+    def test_plot_feature_trends_orchestrator_excludes_target(self, mock_plot, mock_select, mock_calculate, sample_data, sample_config):
+        """Тест что целевая переменная исключена из признаков"""
+        # Настраиваем моки
+        mock_metrics_df = pd.DataFrame({'feature': ['Cement', 'Water'], 'linear_r2_score': [0.8, 0.6]})
+        mock_results_df = pd.DataFrame({
+            'feature': ['Cement', 'Water'],
+            'best_transformation': ['Linear', 'Log'],
+            'best_r2_score': [0.8, 0.6]
+        })
+        
+        mock_calculate.return_value = mock_metrics_df
+        mock_select.return_value = mock_results_df
+        
+        # Вызываем функцию
+        plot_feature_trends_orchestrator(sample_data, sample_config)
+        
+        # Проверяем что calculate_trend_metrics вызвана с правильными признаками (без Strength)
+        called_features = mock_calculate.call_args[0][1]  # Второй аргумент - features
+        assert 'Strength' not in called_features
+        assert 'Cement' in called_features
+        assert 'Water' in called_features
+        assert 'Age' in called_features
+    
+    @patch('src.features.engineer.calculate_trend_metrics')
+    @patch('src.features.engineer.select_best_transformations')
+    @patch('src.features.engineer.plot_feature_trends')
+    def test_plot_feature_trends_orchestrator_empty_data(self, mock_plot, mock_select, mock_calculate, sample_config):
+        """Тест с пустыми данными"""
+        empty_df = pd.DataFrame(columns=['Cement', 'Water', 'Strength'])
+        
+        # Настраиваем моки для пустых данных
+        mock_metrics_df = pd.DataFrame(columns=['feature', 'linear_r2_score'])
+        mock_results_df = pd.DataFrame(columns=['feature', 'best_transformation', 'best_r2_score'])
+        
+        mock_calculate.return_value = mock_metrics_df
+        mock_select.return_value = mock_results_df
+        
+        # Вызываем функцию с пустыми данными
+        result = plot_feature_trends_orchestrator(empty_df, sample_config)
+        
+        # Проверяем что функции были вызваны
+        mock_calculate.assert_called_once()
+        mock_select.assert_called_once()
+        mock_plot.assert_called_once()
+        
+        # Проверяем результат
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 0
+    
+    @patch('src.features.engineer.calculate_trend_metrics')
+    @patch('src.features.engineer.select_best_transformations')
+    @patch('src.features.engineer.plot_feature_trends')
+    def test_plot_feature_trends_orchestrator_only_target(self, mock_plot, mock_select, mock_calculate, sample_config):
+        """Тест когда в данных только целевая переменная"""
+        df_only_target = pd.DataFrame({'Strength': [1, 2, 3, 4, 5]})
+        
+        # Настраиваем моки для случая без признаков
+        mock_metrics_df = pd.DataFrame(columns=['feature', 'linear_r2_score'])
+        mock_results_df = pd.DataFrame(columns=['feature', 'best_transformation', 'best_r2_score'])
+        
+        mock_calculate.return_value = mock_metrics_df
+        mock_select.return_value = mock_results_df
+        
+        # Вызываем функцию
+        result = plot_feature_trends_orchestrator(df_only_target, sample_config)
+        
+        # Проверяем что функции были вызваны
+        mock_calculate.assert_called_once()
+        mock_select.assert_called_once()
+        mock_plot.assert_called_once()
+        
+        # Проверяем результат
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 0
 
 
 class TestCreateFeatureAnalysis:
@@ -452,3 +621,8 @@ class TestIntegration:
         # Проверяем что нет NaN значений
         assert not feature_analysis.isnull().any().any()
         assert not vif_analysis.isnull().any().any()
+
+
+if __name__ == "__main__":
+    # Запуск тестов из командной строки
+    pytest.main([__file__, "-v"])

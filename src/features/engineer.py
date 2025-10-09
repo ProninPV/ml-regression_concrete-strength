@@ -11,8 +11,8 @@ from statsmodels.tools.tools import add_constant
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from analysis.eda import calculate_trend_metrics, select_best_transformations
-from visualization.visualization import plot_feature_trends
+from ..analysis.eda import calculate_trend_metrics, select_best_transformations
+from ..visualization.visualization import plot_feature_trends
 
 
 def create_feature_analysis(data: pd.DataFrame) -> pd.DataFrame:
