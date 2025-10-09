@@ -1,9 +1,12 @@
 import pandas as pd
+import numpy as np
 from pathlib import Path
 from typing import Dict
 import scipy.stats as stats
 from ydata_profiling import ProfileReport
-from typing import Optional, Tuple, Dict
+from typing import Optional, Tuple, Dict, Any
+from scipy.optimize import curve_fit
+from sklearn.metrics import r2_score
 
 
 def detect_outliers(df: pd.DataFrame,
@@ -328,3 +331,95 @@ def eda_report(data: pd.DataFrame, dataset_name: str, config: dict, resave: bool
     except Exception as e:
         print(f"Ошибка при генерации EDA-отчета: {str(e)}")
         raise
+
+
+def calculate_trend_metrics(df: pd.DataFrame, 
+                          features: list,
+                          target: str,
+                          config: Dict[str, Any]) -> pd.DataFrame:
+    """
+    Вычисляет метрики трендов для признаков.
+    """
+    def linear_func(x, a, b):
+        return a * x + b
+    
+    def log_func(x, a, b):
+        return a * np.log(x + 1e-10) + b
+    
+    def sqrt_func(x, a, b):
+        return a * np.sqrt(x) + b
+    
+    def reciprocal_func(x, a, b):
+        return a / (x + 1e-10) + b
+    
+    def square_func(x, a, b):
+        return a * (x ** 2) + b
+    
+    trend_funcs = [linear_func, log_func, sqrt_func, reciprocal_func, square_func]
+    trend_names = config['trend_settings']['names']
+    
+    results_data = []
+    
+    for feature in features:
+        x_data = df[feature].values
+        y_data = df[target].values
+        
+        sort_idx = np.argsort(x_data)
+        x_sorted = x_data[sort_idx]
+        y_sorted = y_data[sort_idx]
+        
+        r2_scores = {}
+        
+        for func, name in zip(trend_funcs, trend_names):
+            try:
+                popt, _ = curve_fit(func, x_sorted, y_sorted, maxfev=5000)
+                y_trend = func(x_sorted, *popt)
+                r2 = r2_score(y_sorted, y_trend)
+                r2_scores[name] = r2
+            except Exception:
+                r2_scores[name] = -np.inf
+        
+        results_data.append({
+            'feature': feature,
+            'linear_r2_score': r2_scores.get('Linear', np.nan),
+            'log_r2_score': r2_scores.get('Log', np.nan),
+            'sqrt_r2_score': r2_scores.get('Sqrt', np.nan),
+            'reciprocal_r2_score': r2_scores.get('1/x', np.nan),
+            'square_r2_score': r2_scores.get('x²', np.nan)
+        })
+    
+    return pd.DataFrame(results_data)
+
+
+def select_best_transformations(metrics_df: pd.DataFrame, alpha: float = 0.2) -> pd.DataFrame:
+    """
+    Выбирает лучшие преобразования на основе метрик.
+    """
+    trend_columns = ['linear_r2_score', 'log_r2_score', 'sqrt_r2_score', 
+                    'reciprocal_r2_score', 'square_r2_score']
+    trend_names = ['Linear', 'Log', 'Sqrt', '1/x', 'x²']
+    
+    results = []
+    
+    for _, row in metrics_df.iterrows():
+        r2_scores = {name: row[col] for name, col in zip(trend_names, trend_columns)}
+        
+        best_trend_name = max(r2_scores.items(), key=lambda x: x[1])[0]
+        best_r2 = r2_scores[best_trend_name]
+        linear_r2 = r2_scores.get('Linear', -np.inf)
+        
+        if best_trend_name != 'Linear' and linear_r2 >= best_r2 * (1 - alpha):
+            final_best_trend = 'Linear'
+            final_best_r2 = linear_r2
+        else:
+            final_best_trend = best_trend_name
+            final_best_r2 = best_r2
+        
+        result_row = row.to_dict()
+        result_row.update({
+            'best_transformation': final_best_trend,
+            'best_r2_score': final_best_r2
+        })
+        results.append(result_row)
+    
+    return pd.DataFrame(results)

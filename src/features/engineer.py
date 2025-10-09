@@ -1,10 +1,18 @@
 import numpy as np
 import pandas as pd
+import os
+import sys
 import matplotlib.pyplot as plt
 import seaborn as sns
+from typing import Tuple, Dict, Any
 from scipy.stats import pearsonr, spearmanr, kurtosis, skew
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from statsmodels.tools.tools import add_constant
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from analysis.eda import calculate_trend_metrics, select_best_transformations
+from visualization.visualization import plot_feature_trends
 
 
 def create_feature_analysis(data: pd.DataFrame) -> pd.DataFrame:
@@ -158,3 +166,23 @@ def highlight_high_vif(vif_data: pd.DataFrame,
                   .format({'VIF': '{:.2f}'}))
     
     return styled_vif
+
+
+def plot_feature_trends_orchestrator(df: pd.DataFrame,
+                                     config: Dict[str, Any],
+                                     target: str = 'Strength',
+                                     figsize: Tuple[int, int] = (16, 12),
+                                     alpha: float = 0.2) -> pd.DataFrame:
+    """
+    Основная функция-оркестратор для построения трендов признаков.
+    """
+    features = df.select_dtypes(include=[np.number]).columns
+    features = [f for f in features if f != target]
+    
+    metrics_df = calculate_trend_metrics(df, features, target, config)
+    results_df = select_best_transformations(metrics_df, alpha)   
+
+    # Используем функцию из visualization
+    plot_feature_trends(df, results_df, features, target, config, figsize) 
+    
+    return results_df
