@@ -39,7 +39,7 @@ def save_outliers_report(summary_df: pd.DataFrame,
         print(f"Ошибка при сохранении отчёта: {e}")
 
 
-def save_cleaned_data(df: pd.DataFrame, config) -> dict:
+def save_cleaned_data(df: pd.DataFrame, data_type: str, config) -> dict:
     """
     Сохраняет очищенные данные в multiple formats (Parquet, CSV, Pickle)
     с добавлением даты в имя файла.
@@ -64,10 +64,12 @@ def save_cleaned_data(df: pd.DataFrame, config) -> dict:
     
     base_path.mkdir(parents=True, exist_ok=True)
     
-    # Создание имени файла с датой
-    current_date = datetime.now().strftime('%Y%m%d_%H%M')
-    filename_base = f"eda_data_{current_date}"
-    
+    # Создание имени файла
+    if data_type == 'train':
+        filename_base = f"eda_data_train"
+    elif data_type == 'test':
+        filename_base = f"eda_data_test"
+
     # Пути к файлам
     file_paths = {
         'parquet': base_path / f"{filename_base}.parquet",
@@ -99,18 +101,8 @@ def save_cleaned_data(df: pd.DataFrame, config) -> dict:
         logging.info(f"Данные успешно сохранены:")
         logging.info(f"Parquet: {file_paths['parquet']}")
         logging.info(f"CSV: {file_paths['csv']}")
-        logging.info(f"Pickle: {file_paths['pkl']}")
-        
-        # Сохранение информации о файлах в конфиг
-        config['processed_files']['latest_cleaned'] = {
-            'parquet': str(file_paths['parquet']),
-            'csv': str(file_paths['csv']),
-            'pkl': str(file_paths['pkl']),
-            'timestamp': current_date
-        }
-               
-        return config
-        
+        logging.info(f"Pickle: {file_paths['pkl']}")       
+          
     except Exception as e:
         logging.error(f"Ошибка при сохранении данных: {e}")
         raise
