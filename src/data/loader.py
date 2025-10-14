@@ -90,3 +90,42 @@ def data_load(data_type: str, config: dict) -> pd.DataFrame:
         raise FileNotFoundError(f"Файл не найден: {file_to_load}")
     except Exception as e:
         raise Exception(f"Ошибка при загрузке данных: {e}")
+    
+
+def data_load_preprocessed(data_type: str, config: dict) -> pd.DataFrame:
+    """
+    Загружает данные из pikle файла.
+
+    Parameters:
+    -----------
+    data_type : str
+        Тип загружаемых данных. Допустимые значения:
+        - 'train' - для загрузки обучающей выборки
+        - 'test' - для загрузки тестовой выборки
+    config : dict
+        Словарь конфигурации
+
+    Returns:
+    --------
+    pd.DataFrame
+        DataFrame с загруженными данными.        
+    """
+    processed_dir = config["data"]["processed_dir"]
+    
+    if data_type == 'train':
+        file_to_load = os.path.join('..', processed_dir, config["processed_files"]["train_file"]["pkl"])
+    elif data_type == 'test':
+        file_to_load = os.path.join('..', processed_dir, config["processed_files"]["test_file"]["pkl"])
+    else:
+        raise ValueError(f"Неизвестный тип данных: {data_type}. Допустимые значения: 'train', 'test'")    
+           
+    print(f"[⧗] Загружаю данные из: {file_to_load}")
+    
+    try:
+        df = pd.read_pickle(file_to_load)
+        print(f"[✓] Данные успешно загружены. Форма: {df.shape}")
+        return df
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Файл не найден: {file_to_load}")
+    except Exception as e:
+        raise Exception(f"Ошибка при загрузке данных: {e}")

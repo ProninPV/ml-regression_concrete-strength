@@ -12,12 +12,15 @@ data:
   train_file: train.csv
 output:
   eda_report_dir: outputs/eda_report
-processed_files:
-  latest_cleaned:
-    csv: D:\Skills\Kaggle\ml-regression_concrete-strength\data\processed\eda_data_20251009_1334.csv
-    parquet: D:\Skills\Kaggle\ml-regression_concrete-strength\data\processed\eda_data_20251009_1334.parquet
-    pkl: D:\Skills\Kaggle\ml-regression_concrete-strength\data\processed\eda_data_20251009_1334.pkl
-    timestamp: '20251009_1334'
+processed_files:  
+  train_file:
+    csv: eda_data_train.csv
+    pkl: eda_data_train.pkl
+    parquet: eda_data_train.parquet
+  test_file:
+    csv: eda_data_test.csv
+    pkl: eda_data_test.pkl
+    parquet: eda_data_test.parquet
 standard_value:
   age:
     max: 365
