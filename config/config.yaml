@@ -21,6 +21,9 @@ processed_files:
     csv: eda_data_test.csv
     pkl: eda_data_test.pkl
     parquet: eda_data_test.parquet
+abnormal_value:
+  superplasticizer: 0.07
+  fine_aggregate: 970
 standard_value:
   age:
     max: 365
