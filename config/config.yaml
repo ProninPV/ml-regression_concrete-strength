@@ -22,7 +22,7 @@ processed_files:
     pkl: eda_data_test.pkl
     parquet: eda_data_test.parquet
 abnormal_value:
-  superplasticizer: 0.07
+  sp_c_pct: 0.098
   fine_aggregate: 970
 standard_value:
   age:
