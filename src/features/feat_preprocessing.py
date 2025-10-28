@@ -1,22 +1,11 @@
-import os
-import yaml
-import logging
 import numpy as np
 import scipy.stats as stats
-import sys
 import warnings
-from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 from scipy.stats import levene
-from typing import List, Any, Optional, Tuple, Dict
-from datetime import datetime
-from scipy.optimize import curve_fit
-from sklearn.metrics import r2_score
-from scipy.stats import pearsonr, spearmanr, kurtosis, skew
+from typing import List, Any, Optional, Dict
 from statsmodels.stats.outliers_influence import variance_inflation_factor
-from statsmodels.tools.tools import add_constant
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
@@ -527,7 +516,7 @@ class ZeroBinaryEncoder(BaseEstimator, TransformerMixin):
         self.test_results_ = {}
         self.binary_features_created_ = []
         
-    def fit(self, X_preprocessed: pd.DataFrame, y: pd.Series) -> 'BinaryFeatureSignificance':
+    def fit(self, X_preprocessed: pd.DataFrame, y: pd.Series):
         """
         Анализ значимости нулевых значений для признаков
         
@@ -710,9 +699,7 @@ class ZeroBinaryEncoder(BaseEstimator, TransformerMixin):
     
     def print_detailed_report(self):
         """Вывод детального отчета в стиле примера"""
-        print("Анализ значимости нулевых значений для признаков:")
-        print("=" * 60)
-        
+                
         for feature, result in self.test_results_.items():
             status = "✓" if result['significant'] else "✗"
             action = "Добавляем бинарный признак" if result['significant'] else "Признак не добавляем"
@@ -933,14 +920,11 @@ class FeatureUninformRemove(BaseEstimator, TransformerMixin):
         """Выводит детальную статистику об удаляемых признаках."""
         if not self.removal_stats_:
             print("Неинформативные признаки не обнаружены.")
-            return
-            
-        print("=" * 60)
-        print("АНАЛИЗ НЕИНФОРМАТИВНЫХ ПРИЗНАКОВ")
-        print("=" * 60)
+            return            
+        
         print(f"Порог для удаления: {self.threshold:.1%}")
         print(f"Всего признаков для удаления: {len(self.columns_to_drop_)}")
-        print("-" * 60)
+        print("-" * 40)
         
         for i, (col, stats) in enumerate(self.removal_stats_.items(), 1):
             print(f"{i}. Признак: {col}")
@@ -1286,12 +1270,8 @@ class CollinearityReducer(BaseEstimator, TransformerMixin):
     
     def print_report(self):
         """Вывод подробного отчета в консоль"""
-        report = self.get_removal_report()
-        
-        print("=" * 70)
-        print("УЛУЧШЕННЫЙ ОТЧЕТ ПО МУЛЬТИКОЛЛИНЕАРНОСТИ")
-        print("=" * 70)
-        
+        report = self.get_removal_report()        
+
         print(f"\nПараметры анализа:")
         print(f"  - VIF порог: {report['parameters']['vif_threshold']}")
         print(f"  - Порог корреляции: {report['parameters']['correlation_threshold']}")
@@ -1321,7 +1301,7 @@ class CollinearityReducer(BaseEstimator, TransformerMixin):
         
         print(f"\nОставшиеся признаки ({len(self.final_features_)}):")
         print(f"  {self.final_features_}")
-        print("=" * 70)
+        print()
 
 
 class FeatureTransformer(BaseEstimator, TransformerMixin):
@@ -1417,9 +1397,7 @@ class FeatureTransformer(BaseEstimator, TransformerMixin):
                 raise ValueError("Target column not found in X and y not provided")
         
         feature_names = X.columns
-        transformation_names = self.config['trend_settings']['names']
-        
-        print("🔍 FeatureTransformer: вычисляем R2 через корреляцию...")
+        transformation_names = self.config['trend_settings']['names']                
         
         for feature in feature_names:
             feature_data = X[feature].values
@@ -1566,33 +1544,3 @@ class FeatureTransformer(BaseEstimator, TransformerMixin):
                 'Тип': 'Бинарный' if info.get('is_binary', False) else 'Небинарный'
             })
         return pd.DataFrame(report)
-    
-    def print_report(self):
-        df_report = self.get_transformation_report()
-        print("\n" + "="*80)
-        print("ФИНАЛЬНЫЙ ОТЧЕТ")
-        print("="*80)
-        
-        # Разделяем бинарные и небинарные признаки
-        binary_features = df_report[df_report['Тип'] == 'Бинарный']
-        non_binary_features = df_report[df_report['Тип'] == 'Небинарный']
-        
-        if len(non_binary_features) > 0:
-            print("\n📈 НЕБИНАРНЫЕ ПРИЗНАКИ (с преобразованиями):")
-            for _, row in non_binary_features.iterrows():
-                print(f"   {row['Признак']} -> {row['Лучшее преобразование']} (R2={row['R2 score']})")
-        
-        if len(binary_features) > 0:
-            print(f"\n🔘 БИНАРНЫЕ ПРИЗНАКИ ({len(binary_features)} шт., всегда Linear):")
-            binary_list = [row['Признак'] for _, row in binary_features.iterrows()]
-            print(f"   {', '.join(binary_list)}")
-        
-        # Статистика
-        total_transformed = len(non_binary_features[non_binary_features['Лучшее преобразование'] != 'Linear'])
-        print(f"\n📊 СТАТИСТИКА:")
-        print(f"   Всего признаков: {len(df_report)}")
-        print(f"   Бинарных: {len(binary_features)}")
-        print(f"   Небинарных: {len(non_binary_features)}")
-        print(f"   Преобразовано: {total_transformed}")
-        
-        return df_report
