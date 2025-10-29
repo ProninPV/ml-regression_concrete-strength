@@ -712,9 +712,20 @@ class ZeroBinaryEncoder(BaseEstimator, TransformerMixin):
 class FeatureHandleEngineering(BaseEstimator, TransformerMixin):
     """
     Класс для создания инженерных признаков на основе состава бетона
+    с разделением по типам моделей
     """
     
-    def __init__(self, wc_column='W/C'):
+    def __init__(self, model_type='trees_models', wc_column='W/C'):
+        """
+        Parameters:
+        -----------
+        model_type : str
+            'linear_models' - для линейных моделей (меньше признаков)
+            'trees_models' - для деревьев (все признаки + бинарные)
+        wc_column : str
+            Название колонки с водоцементным отношением
+        """
+        self.model_type = model_type
         self.wc_column = wc_column
         self.low_wc_threshold_ = None
         self.high_wc_threshold_ = None
@@ -726,7 +737,8 @@ class FeatureHandleEngineering(BaseEstimator, TransformerMixin):
         """
         # Проверяем, что необходимые признаки присутствуют
         required_features = ['Cement', 'Blast Furnace Slag', 'Fly Ash', 
-                           'Coarse Aggregate', 'Fine Aggregate', 'Water']
+                           'Coarse Aggregate', 'Fine Aggregate', 'Water', 
+                           'Superplasticizer']
         
         missing_features = [feat for feat in required_features if feat not in X.columns]
         if missing_features:
@@ -749,15 +761,11 @@ class FeatureHandleEngineering(BaseEstimator, TransformerMixin):
     
     def transform(self, X):
         """
-        Создает новые инженерные признаки
+        Создает новые инженерные признаки в зависимости от типа модели
         """
         X_transformed = X.copy()
         
-        # 1. Бинарные признаки наличия компонентов
-        X_transformed['is_zero_slag'] = (X_transformed['Blast Furnace Slag'] == 0).astype(int)
-        X_transformed['is_zero_superplastic'] = (X_transformed['Superplasticizer'] == 0).astype(int)
-        
-        # 2. Композитные признаки
+        # БАЗОВЫЕ ПРИЗНАКИ (для всех типов моделей)
         X_transformed['Total_powder'] = (X_transformed['Cement'] + 
                                        X_transformed['Blast Furnace Slag'] + 
                                        X_transformed['Fly Ash'])
@@ -775,21 +783,28 @@ class FeatureHandleEngineering(BaseEstimator, TransformerMixin):
             0
         )
         
-        # 3. Признаки W/C ratio
-        if self.wc_column in X_transformed.columns:
-            wc_ratio = X_transformed[self.wc_column]
-        else:
-            # Если W/C нет в данных, вычисляем его
-            wc_ratio = X_transformed['Water'] / X_transformed['Cement']
-            X_transformed['W/C'] = wc_ratio
-        
-        # Адаптивные пороги (вычисленные в fit)
-        X_transformed['Low_WC_ratio'] = (wc_ratio < self.low_wc_threshold_).astype(int)
-        X_transformed['High_WC_ratio'] = (wc_ratio > self.high_wc_threshold_).astype(int)
-        
-        # Технологические пороги
-        X_transformed['Low_WC_tech'] = (wc_ratio < 0.4).astype(int)
-        X_transformed['High_WC_tech'] = (wc_ratio > 0.6).astype(int)
+        # ДОПОЛНИТЕЛЬНЫЕ ПРИЗНАКИ ДЛЯ ДЕРЕВЬЕВ
+        if self.model_type == 'trees_models':
+            # Бинарные признаки наличия компонентов (только положительные!)
+            X_transformed['Has_Slag'] = (X_transformed['Blast Furnace Slag'] > 0).astype(int)
+            X_transformed['Has_FlyAsh'] = (X_transformed['Fly Ash'] > 0).astype(int)
+            X_transformed['Has_Superplasticizer'] = (X_transformed['Superplasticizer'] > 0).astype(int)
+            
+            # Признаки W/C ratio
+            if self.wc_column in X_transformed.columns:
+                wc_ratio = X_transformed[self.wc_column]
+            else:
+                # Если W/C нет в данных, вычисляем его
+                wc_ratio = X_transformed['Water'] / X_transformed['Cement']
+                X_transformed['W/C'] = wc_ratio
+            
+            # Адаптивные пороги (вычисленные в fit)
+            X_transformed['Low_WC_ratio'] = (wc_ratio < self.low_wc_threshold_).astype(int)
+            X_transformed['High_WC_ratio'] = (wc_ratio > self.high_wc_threshold_).astype(int)
+            
+            # Технологические пороги
+            X_transformed['Low_WC_tech'] = (wc_ratio < 0.4).astype(int)
+            X_transformed['High_WC_tech'] = (wc_ratio > 0.6).astype(int)
         
         return X_transformed
     
@@ -797,13 +812,26 @@ class FeatureHandleEngineering(BaseEstimator, TransformerMixin):
         """
         Возвращает сводку по созданным признакам
         """
+        base_features = [
+            'Total_powder', 'Aggregate_ratio', 'Binder_water_ratio'
+        ]
+        
+        trees_features = [
+            'Has_Slag', 'Has_FlyAsh', 'Has_Superplasticizer',
+            'Low_WC_ratio', 'High_WC_ratio', 'Low_WC_tech', 'High_WC_tech'
+        ]
+        
+        if self.model_type == 'linear_models':
+            features_created = base_features
+            total_features = len(features_created)
+        else:  # trees_models
+            features_created = base_features + trees_features
+            total_features = len(features_created)
+        
         return {
-            'total_features_created': 9,
-            'features_created': [
-                'is_zero_slag', 'is_zero_superplastic', 'Total_powder',
-                'Aggregate_ratio', 'Binder_water_ratio', 'Low_WC_ratio',
-                'High_WC_ratio', 'Low_WC_tech', 'High_WC_tech'
-            ],
+            'model_type': self.model_type,
+            'total_features_created': total_features,
+            'features_created': features_created,
             'wc_thresholds': {
                 'low_adaptive': self.low_wc_threshold_,
                 'high_adaptive': self.high_wc_threshold_,
@@ -816,17 +844,26 @@ class FeatureHandleEngineering(BaseEstimator, TransformerMixin):
         """
         Возвращает описание созданных признаков
         """
-        return {
-            'is_zero_slag': 'Наличие шлака в смеси (0/1)',
-            'is_zero_superplastic': 'Наличие суперпластификатора (0/1)',
+        base_descriptions = {
             'Total_powder': 'Общее количество вяжущего (цемент + шлак + зола)',
             'Aggregate_ratio': 'Соотношение крупного и мелкого заполнителя',
-            'Binder_water_ratio': 'Соотношение вяжущего и воды',
+            'Binder_water_ratio': 'Соотношение вяжущего и воды'
+        }
+        
+        trees_descriptions = {
+            'Has_Slag': 'Наличие шлака в смеси (0/1)',
+            'Has_FlyAsh': 'Наличие золы в смеси (0/1)',
+            'Has_Superplasticizer': 'Наличие суперпластификатора (0/1)',
             'Low_WC_ratio': 'Низкое В/Ц отношение (адаптивный порог)',
             'High_WC_ratio': 'Высокое В/Ц отношение (адаптивный порог)',
             'Low_WC_tech': 'Низкое В/Ц отношение (< 0.4)',
             'High_WC_tech': 'Высокое В/Ц отношение (> 0.6)'
         }
+        
+        if self.model_type == 'linear_models':
+            return base_descriptions
+        else:
+            return {**base_descriptions, **trees_descriptions}
     
 
 class FeatureUninformRemove(BaseEstimator, TransformerMixin):
@@ -910,17 +947,17 @@ class FeatureUninformRemove(BaseEstimator, TransformerMixin):
         else:
             X_transformed = pd.DataFrame(X).drop(columns=self.columns_to_drop_, errors='ignore')
             
-        if self.verbose and len(self.columns_to_drop_) > 0:
-            print(f"\nУдалено признаков: {len(self.columns_to_drop_)}")
-            print(f"Оставлено признаков: {X_transformed.shape[1]}")
+        # if self.verbose and len(self.columns_to_drop_) > 0:
+            # print(f"\nУдалено признаков: {len(self.columns_to_drop_)}")
+            # print(f"Оставлено признаков: {X_transformed.shape[1]}")
             
         return X_transformed
     
     def _print_removal_stats(self):
         """Выводит детальную статистику об удаляемых признаках."""
-        if not self.removal_stats_:
-            print("Неинформативные признаки не обнаружены.")
-            return            
+        # if not self.removal_stats_:
+        #     print("Неинформативные признаки не обнаружены.")
+        #     return            
         
         print(f"Порог для удаления: {self.threshold:.1%}")
         print(f"Всего признаков для удаления: {len(self.columns_to_drop_)}")
@@ -972,7 +1009,7 @@ class FeatureUninformRemove(BaseEstimator, TransformerMixin):
             'removal_stats': self.removal_stats_,
             'total_removed': len(self.columns_to_drop_)
         }
-
+    
 
 class CollinearityReducer(BaseEstimator, TransformerMixin):
     """
@@ -990,7 +1027,9 @@ class CollinearityReducer(BaseEstimator, TransformerMixin):
         self.correlation_threshold = correlation_threshold
         self.priority_strategy = priority_strategy
         self.domain_priority_list = domain_priority_list or []
-        self.protected_features = protected_features or ['Water', 'Cement', 'Age']
+        self.protected_features = protected_features or ['Water',
+                                                         'Cement',     
+                                                         'Age']
         self.max_removal_percentage = max_removal_percentage
         self.verbose = verbose
         
@@ -1312,6 +1351,9 @@ class FeatureTransformer(BaseEstimator, TransformerMixin):
         self.best_transformations_ = {}
         self.transformation_report_ = {}
         
+        # Признаки, для которых разрешено Log преобразование
+        self.allowed_log_features = ['Age']
+        
         self.transform_functions = {
             'Linear': lambda x: x,
             'Log': lambda x: np.log(np.maximum(x, 1e-8)),
@@ -1347,6 +1389,16 @@ class FeatureTransformer(BaseEstimator, TransformerMixin):
             return True
             
         return False
+    
+    def _get_allowed_transformations(self, feature_name):
+        """Возвращает список разрешенных преобразований для признака"""
+        base_transformations = ['Linear', 'Sqrt', '1/x', 'square_func']
+        
+        # Добавляем Log только для разрешенных признаков
+        if feature_name in self.allowed_log_features:
+            return base_transformations + ['Log']
+        
+        return base_transformations
     
     def _safe_transform(self, func, x, feature_name, transform_name):
         """Безопасное применение преобразования с диагностикой"""
@@ -1404,9 +1456,9 @@ class FeatureTransformer(BaseEstimator, TransformerMixin):
             
             # ⭐⭐⭐ ПРОВЕРКА НА БИНАРНЫЙ ПРИЗНАК ⭐⭐⭐
             if self._is_binary_feature(feature, feature_data):
-                print(f"\n📊 Анализ признака: {feature} [БИНАРНЫЙ]")
-                print(f"   min={feature_data.min():.2f}, max={feature_data.max():.2f}")
-                print(f"   ⭐ Для бинарных признаков всегда используем Linear")
+                # print(f"\n📊 Анализ признака: {feature} [БИНАРНЫЙ]")
+                # print(f"   min={feature_data.min():.2f}, max={feature_data.max():.2f}")
+                # print(f"   ⭐ Для бинарных признаков всегда используем Linear")
                 
                 # Для бинарных признаков всегда используем Linear
                 self.best_transformations_[feature] = 'Linear'
@@ -1421,17 +1473,20 @@ class FeatureTransformer(BaseEstimator, TransformerMixin):
             # Обычная обработка для небинарных признаков
             r2_scores = {}
             
-            print(f"\n📊 Анализ признака: {feature}")
-            print(f"   min={feature_data.min():.2f}, max={feature_data.max():.2f}")
+            # print(f"\n📊 Анализ признака: {feature}")
+            # print(f"   min={feature_data.min():.2f}, max={feature_data.max():.2f}")
             
             # Проверяем исходные данные
             if np.any(np.isnan(feature_data)) or np.any(np.isinf(feature_data)):
                 print(f"   ❌ Исходные данные содержат NaN/inf")
                 continue
             
-            # Вычисляем R2 для каждого преобразования
+            # Получаем разрешенные преобразования для этого признака
+            allowed_transformations = self._get_allowed_transformations(feature)
+            
+            # Вычисляем R2 для каждого разрешенного преобразования
             for transform_name in transformation_names:
-                if transform_name in self.transform_functions:
+                if transform_name in self.transform_functions and transform_name in allowed_transformations:
                     # Применяем преобразование
                     transformed_data = self._safe_transform(
                         self.transform_functions[transform_name], 
@@ -1444,20 +1499,22 @@ class FeatureTransformer(BaseEstimator, TransformerMixin):
                     r2 = self._calculate_r2(transformed_data, y)
                     r2_scores[transform_name] = r2
                     
-                    if r2 > -np.inf:
-                        print(f"   ✅ {transform_name}: R2 = {r2:.4f}")
-                    else:
-                        print(f"   ❌ {transform_name}: невалидно")
+                    # if r2 > -np.inf:
+                    #     print(f"   ✅ {transform_name}: R2 = {r2:.4f}")
+                    # else:
+                    #     print(f"   ❌ {transform_name}: невалидно")
+                # elif transform_name in self.transform_functions and transform_name not in allowed_transformations:
+                #     print(f"   ⚠️ {transform_name}: запрещено для этого признака")
             
             # Если все R2 = -inf, используем Linear по умолчанию
             if all(r2 == -np.inf for r2 in r2_scores.values()):
-                print(f"   ⚠️ Все преобразования невалидны, используем Linear")
+                # print(f"   ⚠️ Все преобразования невалидны, используем Linear")
                 best_transform = 'Linear'
                 best_r2 = -np.inf
             else:
                 # Используем ваш алгоритм выбора
                 best_transform, best_r2 = self._select_best_transformation(r2_scores)
-                print(f"   🎯 Лучшее: {best_transform} (R2={best_r2:.4f})")
+                # print(f"   🎯 Лучшее: {best_transform} (R2={best_r2:.4f})")
             
             # Сохраняем лучшее преобразование
             self.best_transformations_[feature] = best_transform
@@ -1536,11 +1593,21 @@ class FeatureTransformer(BaseEstimator, TransformerMixin):
     def get_transformation_report(self):
         report = []
         for feature, info in self.transformation_report_.items():
-            report.append({
+            # Создаем отдельные колонки для каждого преобразования
+            row_data = {
                 'Признак': feature,
                 'Лучшее преобразование': info['best_transformation'],
                 'R2 score': f"{info['best_r2']:.6f}",
-                'Все R2 scores': {k: f"{v:.6f}" for k, v in info['r2_scores'].items()},
                 'Тип': 'Бинарный' if info.get('is_binary', False) else 'Небинарный'
-            })
+            }
+            
+            # Добавляем R2 score для каждого преобразования в отдельные колонки
+            for transform_name, r2_score in info['r2_scores'].items():
+                if r2_score > -np.inf:
+                    row_data[f'R2 {transform_name}'] = f"{r2_score:.6f}"
+                else:
+                    row_data[f'R2 {transform_name}'] = "-inf"
+            
+            report.append(row_data)
+        
         return pd.DataFrame(report)
