@@ -5,6 +5,7 @@ import tempfile
 import shutil
 from datetime import datetime
 from unittest.mock import patch, MagicMock
+import logging
 
 # Добавляем путь к исходному коду в Python path
 import sys
@@ -132,9 +133,6 @@ class TestSaveCleanedData:
         return {
             'data': {
                 'processed_dir': 'data/processed'
-            },
-            'processed_files': {
-                'latest_cleaned': {}
             }
         }
     
@@ -151,8 +149,8 @@ class TestSaveCleanedData:
         shutil.rmtree(temp_dir)
     
     @patch('src.data.saving.logging')
-    def test_save_cleaned_data_creates_files(self, mock_logging, sample_dataframe, sample_config):
-        """Тест создания файлов в разных форматах"""
+    def test_save_cleaned_data_train_creates_files(self, mock_logging, sample_dataframe, sample_config):
+        """Тест создания файлов для train данных"""
         temp_project_root = self.create_temp_project_structure()
         try:
             # Мокаем Path(__file__) чтобы вернуть правильный путь
@@ -165,17 +163,46 @@ class TestSaveCleanedData:
                 # Настраиваем mock чтобы при вызове Path(__file__) возвращал наш мок
                 mock_path_class.return_value = mock_path_instance
                 
-                # Вызов функции
-                result_config = save_cleaned_data(sample_dataframe, sample_config)
+                # Вызов функции для train данных
+                save_cleaned_data(sample_dataframe, 'train', sample_config)
             
-            # Проверка что файлы созданы
-            parquet_files = list((temp_project_root / "data" / "processed").glob("*.parquet"))
-            csv_files = list((temp_project_root / "data" / "processed").glob("*.csv"))
-            pkl_files = list((temp_project_root / "data" / "processed").glob("*.pkl"))
+            # Проверка что файлы созданы с правильными именами
+            parquet_files = list((temp_project_root / "data" / "processed").glob("eda_data_train.parquet"))
+            csv_files = list((temp_project_root / "data" / "processed").glob("eda_data_train.csv"))
+            pkl_files = list((temp_project_root / "data" / "processed").glob("eda_data_train.pkl"))
             
-            assert len(parquet_files) == 1, "Должен быть создан Parquet файл"
-            assert len(csv_files) == 1, "Должен быть создан CSV файл"
-            assert len(pkl_files) == 1, "Должен быть создан Pickle файл"
+            assert len(parquet_files) == 1, "Должен быть создан Parquet файл для train"
+            assert len(csv_files) == 1, "Должен быть создан CSV файл для train"
+            assert len(pkl_files) == 1, "Должен быть создан Pickle файл для train"
+        finally:
+            self.cleanup_temp_project(temp_project_root)
+    
+    @patch('src.data.saving.logging')
+    def test_save_cleaned_data_test_creates_files(self, mock_logging, sample_dataframe, sample_config):
+        """Тест создания файлов для test данных"""
+        temp_project_root = self.create_temp_project_structure()
+        try:
+            # Мокаем Path(__file__) чтобы вернуть правильный путь
+            with patch('src.data.saving.Path') as mock_path_class:
+                # Создаем мок для Path(__file__)
+                mock_path_instance = MagicMock()
+                mock_path_instance.resolve.return_value = temp_project_root / "src" / "data" / "saving.py"
+                mock_path_instance.parent.parent.parent = temp_project_root
+                
+                # Настраиваем mock чтобы при вызове Path(__file__) возвращал наш мок
+                mock_path_class.return_value = mock_path_instance
+                
+                # Вызов функции для test данных
+                save_cleaned_data(sample_dataframe, 'test', sample_config)
+            
+            # Проверка что файлы созданы с правильными именами
+            parquet_files = list((temp_project_root / "data" / "processed").glob("eda_data_test.parquet"))
+            csv_files = list((temp_project_root / "data" / "processed").glob("eda_data_test.csv"))
+            pkl_files = list((temp_project_root / "data" / "processed").glob("eda_data_test.pkl"))
+            
+            assert len(parquet_files) == 1, "Должен быть создан Parquet файл для test"
+            assert len(csv_files) == 1, "Должен быть создан CSV файл для test"
+            assert len(pkl_files) == 1, "Должен быть создан Pickle файл для test"
         finally:
             self.cleanup_temp_project(temp_project_root)
     
@@ -195,12 +222,12 @@ class TestSaveCleanedData:
                 mock_path_class.return_value = mock_path_instance
                 
                 # Вызов функции
-                result_config = save_cleaned_data(sample_dataframe, sample_config)
+                save_cleaned_data(sample_dataframe, 'train', sample_config)
             
             # Получаем пути к файлам
-            parquet_file = list((temp_project_root / "data" / "processed").glob("*.parquet"))[0]
-            csv_file = list((temp_project_root / "data" / "processed").glob("*.csv"))[0]
-            pkl_file = list((temp_project_root / "data" / "processed").glob("*.pkl"))[0]
+            parquet_file = temp_project_root / "data" / "processed" / "eda_data_train.parquet"
+            csv_file = temp_project_root / "data" / "processed" / "eda_data_train.csv"
+            pkl_file = temp_project_root / "data" / "processed" / "eda_data_train.pkl"
             
             # Проверка содержимого файлов
             # Parquet
@@ -214,38 +241,6 @@ class TestSaveCleanedData:
             # Pickle
             loaded_pkl = pd.read_pickle(pkl_file)
             pd.testing.assert_frame_equal(sample_dataframe, loaded_pkl)
-        finally:
-            self.cleanup_temp_project(temp_project_root)
-    
-    @patch('src.data.saving.logging')
-    def test_save_cleaned_data_updates_config(self, mock_logging, sample_dataframe, sample_config):
-        """Тест обновления конфигурации"""
-        temp_project_root = self.create_temp_project_structure()
-        try:
-            # Мокаем Path(__file__) чтобы вернуть правильный путь
-            with patch('src.data.saving.Path') as mock_path_class:
-                # Создаем мок для Path(__file__)
-                mock_path_instance = MagicMock()
-                mock_path_instance.resolve.return_value = temp_project_root / "src" / "data" / "saving.py"
-                mock_path_instance.parent.parent.parent = temp_project_root
-                
-                # Настраиваем mock чтобы при вызове Path(__file__) возвращал наш мок
-                mock_path_class.return_value = mock_path_instance
-                
-                # Вызов функции
-                result_config = save_cleaned_data(sample_dataframe, sample_config)
-            
-            # Проверка обновления конфига
-            assert 'latest_cleaned' in result_config['processed_files']
-            assert 'parquet' in result_config['processed_files']['latest_cleaned']
-            assert 'csv' in result_config['processed_files']['latest_cleaned']
-            assert 'pkl' in result_config['processed_files']['latest_cleaned']
-            assert 'timestamp' in result_config['processed_files']['latest_cleaned']
-            
-            # Проверка что пути являются строками
-            assert isinstance(result_config['processed_files']['latest_cleaned']['parquet'], str)
-            assert isinstance(result_config['processed_files']['latest_cleaned']['csv'], str)
-            assert isinstance(result_config['processed_files']['latest_cleaned']['pkl'], str)
         finally:
             self.cleanup_temp_project(temp_project_root)
     
@@ -270,7 +265,7 @@ class TestSaveCleanedData:
                 mock_path_class.return_value = mock_path_instance
                 
                 # Вызов функции должна создать директорию
-                result_config = save_cleaned_data(sample_dataframe, sample_config)
+                save_cleaned_data(sample_dataframe, 'train', sample_config)
             
             # Проверка что директория создана
             assert processed_dir.exists()
@@ -294,7 +289,7 @@ class TestSaveCleanedData:
                 mock_path_class.return_value = mock_path_instance
                 
                 # Вызов функции
-                result_config = save_cleaned_data(sample_dataframe, sample_config)
+                save_cleaned_data(sample_dataframe, 'train', sample_config)
             
             # Проверка вызовов логирования
             assert mock_logging.info.called
@@ -330,7 +325,7 @@ class TestSaveCleanedData:
                 
                 # Проверка что исключение пробрасывается
                 with pytest.raises(Exception, match="Parquet save error"):
-                    save_cleaned_data(sample_dataframe, sample_config)
+                    save_cleaned_data(sample_dataframe, 'train', sample_config)
             
             # Проверка логирования ошибки
             mock_logging.error.assert_called_once()
@@ -341,58 +336,5 @@ class TestSaveCleanedData:
             self.cleanup_temp_project(temp_project_root)
 
 
-# Альтернативный подход - рефакторинг функции для лучшей тестируемости
-class TestSaveCleanedDataRefactored:
-    """Тесты с упрощенным подходом к моканию"""
-    
-    @pytest.fixture
-    def sample_dataframe(self):
-        return pd.DataFrame({
-            'feature1': [1, 2, 3],
-            'feature2': [4, 5, 6]
-        })
-    
-    @pytest.fixture
-    def sample_config(self):
-        return {
-            'data': {'processed_dir': 'data/processed'},
-            'processed_files': {'latest_cleaned': {}}
-        }
-    
-    @patch('src.data.saving.datetime')
-    @patch('src.data.saving.logging')
-    def test_save_cleaned_data_integration(self, mock_logging, mock_datetime, sample_dataframe, sample_config):
-        """Интеграционный тест с моканием datetime"""
-        # Мокаем datetime
-        mock_now = MagicMock()
-        mock_now.strftime.return_value = '20231201_1200'
-        mock_datetime.now.return_value = mock_now
-        
-        # Создаем временную директорию
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_path = Path(temp_dir)
-            
-            # Мокаем project root
-            with patch('src.data.saving.Path') as mock_path:
-                mock_instance = MagicMock()
-                mock_instance.__file__ = temp_path / "src" / "data" / "saving.py"
-                mock_instance.resolve.return_value = temp_path / "src" / "data" / "saving.py"
-                mock_instance.parent.parent.parent = temp_path
-                mock_path.return_value = mock_instance
-                
-                # Вызываем функцию
-                result = save_cleaned_data(sample_dataframe, sample_config)
-                
-                # Проверяем что файлы созданы
-                expected_files = [
-                    temp_path / "data" / "processed" / "eda_data_20231201_1200.parquet",
-                    temp_path / "data" / "processed" / "eda_data_20231201_1200.csv",
-                    temp_path / "data" / "processed" / "eda_data_20231201_1200.pkl"
-                ]
-                
-                # Проверяем что функция пыталась создать файлы
-                assert mock_logging.info.called
-                
-                # Проверяем обновление конфига
-                assert 'latest_cleaned' in result['processed_files']
-                assert '20231201_1200' in result['processed_files']['latest_cleaned']['timestamp']
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])
