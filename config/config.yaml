@@ -1,0 +1,70 @@
+binary_features:
+  from_zeros:
+  - Blast Furnace Slag
+  - Superplasticizer
+competition:
+  name: skillbox-ml-junior-regression-10
+data:
+  logs: logs
+  processed_dir: data/processed
+  raw_dir: data/raw
+  test_file: test.csv
+  train_file: train.csv
+output:
+  eda_report_dir: outputs/eda_report
+  modeling_report_dir: outputs/modeling_report
+  best_pipeline_dir: outputs/pipelines
+processed_files:  
+  train_file:
+    csv: eda_data_train.csv
+    pkl: eda_data_train.pkl
+    parquet: eda_data_train.parquet
+  test_file:
+    csv: eda_data_test.csv
+    pkl: eda_data_test.pkl
+    parquet: eda_data_test.parquet
+abnormal_value:
+  sp_c_pct: 0.098
+  fine_aggregate: 970
+standard_value:
+  age:
+    max: 365
+    min: 1
+  cement:
+    max: 600
+    min: 200
+  coarse_aggregate:
+    max: 1300
+    min: 1000
+  fine_aggregate:
+    max: 800
+    min: 600
+  fly_ash:
+    max: 200
+    min: 0
+  sp_c_pct:
+    max: 0.025
+    min: 0.005
+  strength:
+    max: 100
+    min: 5
+  w_c:
+    max: 0.7
+    min: 0.3
+  water:
+    max: 220
+    min: 120
+task_type: regression
+trend_settings:
+  colors:
+  - red
+  - blue
+  - green
+  - orange
+  - purple
+  names:
+  - Linear
+  - Log
+  - Sqrt
+  - 1/x
+  - "x\xB2"

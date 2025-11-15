@@ -1,0 +1,53 @@
+1. Архитектура пайплайна
+Разделение на этапы: Preprocessing → Feature Engineering → Feature Selection → Modeling
+
+Гибридный подход: DataFrame для анализа + numpy для быстрых вычислений
+
+Сохранение состояний: Все статистики вычисляются только на train
+
+2. Обработка данных
+OutlierHandler: Применять ДО пайплайна (удаление строк)
+
+FeatureHandleEngineering: Через FunctionTransformer (статические преобразования)
+
+FeatureTransformer: В пайплайне (подбор преобразований на train)
+
+3. Feature Selection
+ZeroBinaryEncoder: В пайплайне (статистические тесты)
+
+FeatureUninformRemove: В пайплайне (удаление неинформативных)
+
+CollinearityReducer: В пайплайне (VIF и корреляции)
+
+4. Критические принципы
+No data leakage: Все fit-операции только на тренировочных данных
+
+Reproducibility: Сохранение всех параметров трансформации
+
+Error handling: Валидация входных данных и graceful degradation
+
+Sklearn compatibility: Полная поддержка GridSearchCV, cross_val_score
+
+5. Производительность
+Numpy оптимизация: Критичные методы через векторные операции
+
+Memory efficiency: Минимизация копирования данных
+
+Batch processing: Поддержка больших датасетов
+
+6. Мониторинг и дебаг
+Feature names: Сохранение на всех этапах
+
+Transformation tracking: Логирование примененных преобразований
+
+Quality metrics: Мониторинг качества на каждом этапе
+
+7. Продакшен-готовность
+Serialization: Поддержка pickle/joblib для сохранения моделей
+
+Versioning: Контроль версий пайплайна и данных
+
+Testing: Юнит-тесты для всех компонентов
+
+Результат: Воспроизводимый, масштабируемый пайплайн, готовый для промышленного использования и экспериментов.
+
