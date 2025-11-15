@@ -369,7 +369,7 @@ def save_sorted_modeling_report(config: Dict[str, Any],
     # report_path = config['output']['modeling_report_dir']
     # report_dir = os.path.dirname(report_path)
     project_root = Path(__file__).resolve().parent.parent.parent
-    report_path = project_root / config['output']['modeling_report_dir']
+    report_path = project_root / config['models_saving']['modeling_report_dir']
     report_path.mkdir(parents=True, exist_ok=True)
 
     # Генерируем имя файла с временем
@@ -446,16 +446,15 @@ def save_best_pipeline(best_model: str,
 
     # Определяем путь сохранения pipeline
     project_root = Path(__file__).resolve().parent.parent.parent
-    pipeline_dir = project_root / config['output']['best_pipeline_dir']
+    pipeline_dir = project_root / config['models_saving']['best_pipeline_dir']
     pipeline_dir.mkdir(parents=True, exist_ok=True)
 
-    
     # Генерируем имя файла с аннотацией
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # Сохраняем пайплайн и метаданные отдельно
-    pipeline_name = f"best_pipeline_{best_model}_{timestamp}.pkl"
-    metadata_name = f"pipeline_metadata_{best_model}_{timestamp}.pkl"
+    pipeline_name = f"best_pipeline_{best_model}.pkl"
+    metadata_name = f"pipeline_metadata_{best_model}.pkl"
 
     pipeline_path = os.path.join(pipeline_dir, pipeline_name)
     metadata_path = os.path.join(pipeline_dir, metadata_name)
