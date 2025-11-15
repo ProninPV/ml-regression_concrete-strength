@@ -9,22 +9,6 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
-def _linear_transform(x):
-    return x
-
-def _log_transform(x):
-    return np.log(np.maximum(x, 1e-8))
-
-def _sqrt_transform(x):
-    return np.sqrt(np.maximum(x, 0))
-
-def _inverse_transform(x):
-    return 1 / np.where(x == 0, 1e-8, np.abs(x))
-
-def _square_transform(x):
-    return x ** 2
-
-
 class OutlierHandler(BaseEstimator, TransformerMixin):
     """
     Обработчик выбросов для использования в sklearn Pipeline.
@@ -1369,16 +1353,15 @@ class FeatureTransformer(BaseEstimator, TransformerMixin):
         
         # Признаки, для которых разрешено Log преобразование
         self.allowed_log_features = ['Age']
-
- 
+        
         self.transform_functions = {
-            'Linear': _linear_transform,
-            'Log': _log_transform,
-            'Sqrt': _sqrt_transform,
-            '1/x': _inverse_transform,
-            'square_func': _square_transform
-        }             
-
+            'Linear': lambda x: x,
+            'Log': lambda x: np.log(np.maximum(x, 1e-8)),
+            'Sqrt': lambda x: np.sqrt(np.maximum(x, 0)),
+            '1/x': lambda x: 1 / np.where(x == 0, 1e-8, np.abs(x)),
+            'square_func': lambda x: x ** 2
+        }
+        
         self.trend_mapping = {
             'Linear': 'Linear',
             'Log': 'Log', 
@@ -1391,9 +1374,8 @@ class FeatureTransformer(BaseEstimator, TransformerMixin):
         self.binary_patterns = [
             'Outlier_', 'High_', 'Low_', 'is_zero', 'is_', 
             'has_', 'flag_', 'binary_', '_bin', '_flag'
-        ]    
-      
-      
+        ]
+    
     def _is_binary_feature(self, feature_name, feature_data):
         """Проверяет, является ли признак бинарным"""
         # Проверка по имени

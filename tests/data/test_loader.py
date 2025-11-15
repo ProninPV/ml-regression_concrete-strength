@@ -1,15 +1,13 @@
 import os
 import sys
 import pytest
-import os
-import sys
-import pytest
 import pandas as pd
 import tempfile
 import yaml
 import subprocess
 from unittest.mock import patch, MagicMock
 import pickle
+from pathlib import Path
 
 # Добавляем путь к src для импорта модулей
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
@@ -175,8 +173,12 @@ class TestDataLoad:
         assert list(df.columns) == ['col1', 'col2', 'col3']
         
         # Проверяем, что read_csv был вызван с правильным путем
-        expected_path = os.path.join('..', 'data/raw', 'train.csv')
-        mock_read_csv.assert_called_once_with(expected_path)
+        mock_read_csv.assert_called_once()
+        actual_path = mock_read_csv.call_args[0][0]
+        # Проверяем что путь содержит ожидаемые части (учитываем оба варианта разделителей)
+        path_str = str(actual_path).replace('\\', '/')  # Нормализуем разделители
+        assert 'data/raw' in path_str
+        assert 'train.csv' in path_str
     
     @patch('pandas.read_csv')
     def test_data_load_test(self, mock_read_csv):
@@ -206,8 +208,12 @@ class TestDataLoad:
         assert list(df.columns) == ['feature1', 'feature2', 'target']
         
         # Проверяем, что read_csv был вызван с правильным путем
-        expected_path = os.path.join('..', 'data/raw', 'test.csv')
-        mock_read_csv.assert_called_once_with(expected_path)
+        mock_read_csv.assert_called_once()
+        actual_path = mock_read_csv.call_args[0][0]
+        # Проверяем что путь содержит ожидаемые части (учитываем оба варианта разделителей)
+        path_str = str(actual_path).replace('\\', '/')  # Нормализуем разделители
+        assert 'data/raw' in path_str
+        assert 'test.csv' in path_str
     
     def test_data_load_invalid_data_type(self):
         """Тест загрузки с некорректным типом данных"""
@@ -297,8 +303,12 @@ class TestDataLoadPreprocessed:
         assert list(df.columns) == ['feature1', 'feature2', 'target']
         
         # Проверяем, что read_pickle был вызван с правильным путем
-        expected_path = os.path.join('..', 'data/processed', 'train_processed.pkl')
-        mock_read_pickle.assert_called_once_with(expected_path)
+        mock_read_pickle.assert_called_once()
+        actual_path = mock_read_pickle.call_args[0][0]
+        # Проверяем что путь содержит ожидаемые части (учитываем оба варианта разделителей)
+        path_str = str(actual_path).replace('\\', '/')  # Нормализуем разделители
+        assert 'data/processed' in path_str
+        assert 'train_processed.pkl' in path_str
     
     @patch('pandas.read_pickle')
     def test_data_load_preprocessed_test(self, mock_read_pickle):
@@ -334,8 +344,12 @@ class TestDataLoadPreprocessed:
         assert list(df.columns) == ['feature1', 'feature2', 'feature3']
         
         # Проверяем, что read_pickle был вызван с правильным путем
-        expected_path = os.path.join('..', 'data/processed', 'test_processed.pkl')
-        mock_read_pickle.assert_called_once_with(expected_path)
+        mock_read_pickle.assert_called_once()
+        actual_path = mock_read_pickle.call_args[0][0]
+        # Проверяем что путь содержит ожидаемые части (учитываем оба варианта разделителей)
+        path_str = str(actual_path).replace('\\', '/')  # Нормализуем разделители
+        assert 'data/processed' in path_str
+        assert 'test_processed.pkl' in path_str
     
     def test_data_load_preprocessed_invalid_data_type(self):
         """Тест загрузки предобработанных данных с некорректным типом"""

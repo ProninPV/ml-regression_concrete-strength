@@ -1,0 +1,11 @@
+outlier_strategy,model_name,model_type,dataset_size,mean_rmse,std_rmse,training_time_sec,memory_used_mb
+['iqr_remove'],LinearRegression,trees_models,691,6.3816,0.6313,3.9,0.02
+['iqr_remove'],LinearRegression,linear_models,691,6.396,0.6418,3.33,0.04
+"['gost_binar', 'combine']",LinearRegression,linear_models,770,6.4902,0.384,3.76,0.11
+"['gost_binar', 'combine']",LinearRegression,trees_models,770,6.504,0.377,4.45,0.33
+['gost_binar'],LinearRegression,trees_models,781,6.585,0.3709,4.57,0.32
+['gost_binar'],LinearRegression,linear_models,781,6.5861,0.3865,3.77,0.02
+['abnormal'],LinearRegression,linear_models,770,6.8253,0.3264,3.69,1.91
+['abnormal'],LinearRegression,trees_models,770,6.8281,0.3032,3.85,0.52
+['combine'],LinearRegression,linear_models,770,6.8368,0.3335,3.36,0.02
+['combine'],LinearRegression,trees_models,770,6.8385,0.3127,3.91,0.13

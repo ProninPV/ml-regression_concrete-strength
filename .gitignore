@@ -15,7 +15,13 @@ env/
 # Logs, outputs, temporary files
 logs/
 outputs/
+docs/
 
 # OS
 .DS_Store
 Thumbs.db
+
+
+# CatBoost training files
+catboost_info/
+

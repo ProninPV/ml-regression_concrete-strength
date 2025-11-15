@@ -11,7 +11,10 @@ data:
   test_file: test.csv
   train_file: train.csv
 output:
-  eda_report_dir: outputs/eda_report
+  eda_report_dir: outputs/eda_report  
+models_saving:
+  modeling_report_dir: models/modeling_report
+  best_pipeline_dir: models/pipelines
 processed_files:  
   train_file:
     csv: eda_data_train.csv

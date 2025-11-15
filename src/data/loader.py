@@ -4,7 +4,7 @@ import subprocess
 import yaml
 import importlib
 import pandas as pd
-
+from pathlib import Path
 
 def load_config(config_path: str = None) -> dict:
     """
@@ -110,14 +110,45 @@ def data_load_preprocessed(data_type: str, config: dict) -> pd.DataFrame:
     pd.DataFrame
         DataFrame с загруженными данными.        
     """
-    processed_dir = config["data"]["processed_dir"]
+    # processed_dir = config["data"]["processed_dir"]
     
-    if data_type == 'train':
-        file_to_load = os.path.join('..', processed_dir, config["processed_files"]["train_file"]["pkl"])
+    # if data_type == 'train':
+    #     file_to_load = os.path.join('..', processed_dir, config["processed_files"]["train_file"]["pkl"])
+    # elif data_type == 'test':
+    #     file_to_load = os.path.join('..', processed_dir, config["processed_files"]["test_file"]["pkl"])
+    # else:
+    #     raise ValueError(f"Неизвестный тип данных: {data_type}. Допустимые значения: 'train', 'test'")
+
+    processed_dir = config["data"]["processed_dir"]    
+    
+    # Универсальный подход - пробуем разные варианты
+    possible_base_dirs = [
+        Path('/content/ml-regression_concrete-strength'),  # Абсолютный путь в Colab
+        Path.cwd(),  # Текущая рабочая директория (./)
+        Path(__file__).resolve().parent.parent.parent,  # Для локальной среды
+    ]
+    
+    BASE_DIR = None    
+    for base_dir in possible_base_dirs:
+        test_path = base_dir / processed_dir        
+        if test_path.exists():
+            # Проверяем, есть ли нужные файлы
+            pkl_files = list(test_path.glob("*.pkl"))            
+            if pkl_files:
+                BASE_DIR = base_dir                
+                break
+    
+    # Если не нашли, используем текущую директорию
+    if BASE_DIR is None:
+        BASE_DIR = Path.cwd()
+        print(f"[WARNING] Используем текущую директорию: {BASE_DIR}")
+    
+    if data_type == 'train':        
+        file_to_load = BASE_DIR / processed_dir / config["processed_files"]["train_file"]["pkl"]     
     elif data_type == 'test':
-        file_to_load = os.path.join('..', processed_dir, config["processed_files"]["test_file"]["pkl"])
+        file_to_load = BASE_DIR / processed_dir / config["processed_files"]["test_file"]["pkl"]        
     else:
-        raise ValueError(f"Неизвестный тип данных: {data_type}. Допустимые значения: 'train', 'test'")    
+        raise ValueError(f"Неизвестный тип данных: {data_type}. Допустимые значения: 'train', 'test'")
            
     print(f"[⧗] Загружаю данные из: {file_to_load}")
     
