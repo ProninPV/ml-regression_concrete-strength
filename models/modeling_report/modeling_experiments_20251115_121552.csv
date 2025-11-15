@@ -1,0 +1,111 @@
+outlier_strategy,model_name,model_type,dataset_size,mean_rmse,std_rmse,training_time_sec,memory_used_mb
+['abnormal'],CatBoostRegressor,trees_models,770,4.2595,0.3446,13.49,0.44
+['abnormal'],CatBoostRegressor,linear_models,770,4.2608,0.3868,11.55,12.38
+"['gost_binar', 'combine']",CatBoostRegressor,linear_models,770,4.3196,0.4173,13.77,0.21
+"['gost_binar', 'combine']",CatBoostRegressor,trees_models,770,4.326,0.3906,14.72,0.03
+['combine'],CatBoostRegressor,linear_models,770,4.3304,0.421,11.68,0.15
+['combine'],CatBoostRegressor,trees_models,770,4.3943,0.3708,13.5,0.09
+['gost_binar'],CatBoostRegressor,trees_models,781,4.406,0.4017,13.94,0.51
+['gost_binar'],CatBoostRegressor,linear_models,781,4.4547,0.3911,13.37,0.16
+['iqr_remove'],CatBoostRegressor,linear_models,691,4.4878,0.5088,13.58,2.4
+"['gost_binar', 'combine']",LGBMRegressor,linear_models,770,4.5113,0.3763,4.64,0.0
+"['gost_binar', 'combine']",LGBMRegressor,trees_models,770,4.5125,0.3765,4.09,0.0
+"['gost_binar', 'combine']",HistGradientBoosting,linear_models,770,4.5335,0.419,8.03,0.0
+"['gost_binar', 'combine']",HistGradientBoosting,trees_models,770,4.5359,0.4204,9.87,0.0
+['combine'],LGBMRegressor,linear_models,770,4.5408,0.3745,4.47,0.0
+['abnormal'],LGBMRegressor,linear_models,770,4.5413,0.376,4.46,2.89
+['combine'],LGBMRegressor,trees_models,770,4.5417,0.3729,3.76,0.0
+['abnormal'],LGBMRegressor,trees_models,770,4.5423,0.3744,3.73,0.13
+['abnormal'],HistGradientBoosting,trees_models,770,4.5442,0.4045,8.8,0.0
+['combine'],HistGradientBoosting,trees_models,770,4.5442,0.4045,9.01,0.0
+['combine'],HistGradientBoosting,linear_models,770,4.5461,0.4028,8.1,0.01
+['abnormal'],HistGradientBoosting,linear_models,770,4.5461,0.4028,7.6,0.55
+['gost_binar'],LGBMRegressor,linear_models,781,4.5483,0.4186,3.69,0.0
+['gost_binar'],LGBMRegressor,trees_models,781,4.5488,0.4189,4.01,0.0
+['gost_binar'],HistGradientBoosting,linear_models,781,4.5682,0.4419,9.02,0.0
+['iqr_remove'],CatBoostRegressor,trees_models,691,4.5682,0.5643,14.1,0.29
+['gost_binar'],HistGradientBoosting,trees_models,781,4.5738,0.4419,9.59,0.0
+"['gost_binar', 'combine']",XGBRegressor,linear_models,770,4.5916,0.5251,13.45,0.03
+"['gost_binar', 'combine']",XGBRegressor,trees_models,770,4.5963,0.5224,10.59,0.0
+['combine'],XGBRegressor,linear_models,770,4.6134,0.5347,9.92,0.0
+['abnormal'],XGBRegressor,linear_models,770,4.6134,0.5347,9.93,5.95
+['combine'],XGBRegressor,trees_models,770,4.614,0.5362,8.21,0.0
+['abnormal'],XGBRegressor,trees_models,770,4.614,0.5362,8.15,0.0
+['gost_binar'],XGBRegressor,trees_models,781,4.6447,0.4366,10.56,0.0
+['gost_binar'],XGBRegressor,linear_models,781,4.6459,0.4383,10.21,0.02
+['iqr_remove'],LGBMRegressor,linear_models,691,4.698,0.5355,5.08,0.0
+['iqr_remove'],LGBMRegressor,trees_models,691,4.7051,0.5311,5.29,0.0
+['iqr_remove'],HistGradientBoosting,trees_models,691,4.7188,0.5352,8.5,0.0
+['iqr_remove'],HistGradientBoosting,linear_models,691,4.7217,0.5346,7.68,0.01
+['abnormal'],GradientBoosting,trees_models,770,4.8811,0.3604,11.49,0.0
+['combine'],GradientBoosting,linear_models,770,4.8816,0.3566,10.68,0.0
+['abnormal'],GradientBoosting,linear_models,770,4.8828,0.3629,10.94,0.11
+['combine'],GradientBoosting,trees_models,770,4.8841,0.3636,11.59,0.0
+"['gost_binar', 'combine']",GradientBoosting,linear_models,770,4.8865,0.3579,11.7,0.0
+"['gost_binar', 'combine']",GradientBoosting,trees_models,770,4.8877,0.3502,12.19,0.0
+['iqr_remove'],XGBRegressor,linear_models,691,4.8878,0.5384,8.09,0.0
+['iqr_remove'],XGBRegressor,trees_models,691,4.8917,0.542,11.59,0.0
+"['gost_binar', 'combine']",RandomForestRegressor,linear_models,770,4.9451,0.4634,28.14,0.0
+"['gost_binar', 'combine']",RandomForestRegressor,trees_models,770,4.9521,0.4568,30.88,0.01
+['abnormal'],RandomForestRegressor,trees_models,770,4.9552,0.4624,26.65,0.07
+['abnormal'],RandomForestRegressor,linear_models,770,4.9588,0.4719,24.9,1.32
+['combine'],RandomForestRegressor,linear_models,770,4.9609,0.464,25.41,0.0
+['combine'],RandomForestRegressor,trees_models,770,4.9639,0.4563,27.4,0.0
+['gost_binar'],RandomForestRegressor,linear_models,781,4.9679,0.4279,26.75,0.0
+['gost_binar'],RandomForestRegressor,trees_models,781,4.9742,0.4368,28.31,0.01
+['gost_binar'],GradientBoosting,trees_models,781,4.9805,0.3981,12.02,0.0
+['gost_binar'],GradientBoosting,linear_models,781,4.9852,0.4029,11.38,0.0
+['iqr_remove'],GradientBoosting,linear_models,691,5.0878,0.5537,11.42,0.0
+['iqr_remove'],GradientBoosting,trees_models,691,5.0952,0.5508,12.73,0.0
+['iqr_remove'],RandomForestRegressor,trees_models,691,5.237,0.4901,31.29,0.01
+['iqr_remove'],RandomForestRegressor,linear_models,691,5.2458,0.4862,27.0,0.0
+['iqr_remove'],Ridge,trees_models,691,6.375,0.6256,1.52,0.0
+['iqr_remove'],LinearRegression,trees_models,691,6.3816,0.6313,1.99,0.01
+['iqr_remove'],Ridge,linear_models,691,6.395,0.6381,2.26,0.0
+['iqr_remove'],LinearRegression,linear_models,691,6.396,0.6418,1.43,0.0
+['combine'],DecisionTreeRegressor,linear_models,770,6.449,0.783,1.57,0.0
+['abnormal'],DecisionTreeRegressor,linear_models,770,6.4545,0.8646,1.55,0.0
+"['gost_binar', 'combine']",Ridge,linear_models,770,6.4789,0.3624,1.49,0.01
+"['gost_binar', 'combine']",DecisionTreeRegressor,linear_models,770,6.482,0.9289,2.06,0.0
+"['gost_binar', 'combine']",Ridge,trees_models,770,6.4891,0.3558,2.17,0.0
+"['gost_binar', 'combine']",LinearRegression,linear_models,770,6.4902,0.384,1.88,0.0
+"['gost_binar', 'combine']",LinearRegression,trees_models,770,6.504,0.377,2.24,0.0
+['abnormal'],DecisionTreeRegressor,trees_models,770,6.5239,0.8296,2.47,0.0
+['combine'],DecisionTreeRegressor,trees_models,770,6.5472,0.8913,2.43,0.0
+"['gost_binar', 'combine']",DecisionTreeRegressor,trees_models,770,6.5535,0.8674,1.97,0.0
+['gost_binar'],DecisionTreeRegressor,trees_models,781,6.5544,0.6417,1.97,0.0
+['gost_binar'],Ridge,trees_models,781,6.5733,0.3644,3.23,0.09
+['gost_binar'],Ridge,linear_models,781,6.5783,0.3795,1.68,0.0
+['gost_binar'],LinearRegression,trees_models,781,6.585,0.3709,2.3,0.0
+['gost_binar'],LinearRegression,linear_models,781,6.5861,0.3865,1.89,0.0
+['gost_binar'],DecisionTreeRegressor,linear_models,781,6.5931,0.6262,1.68,0.0
+['iqr_remove'],Lasso,linear_models,691,6.8086,0.672,2.65,0.0
+['iqr_remove'],DecisionTreeRegressor,trees_models,691,6.8159,0.6349,3.36,0.0
+['iqr_remove'],Lasso,trees_models,691,6.8179,0.6761,1.55,0.0
+['abnormal'],Ridge,trees_models,770,6.8242,0.2915,1.68,0.02
+['abnormal'],LinearRegression,linear_models,770,6.8253,0.3264,1.71,1.04
+['abnormal'],Ridge,linear_models,770,6.828,0.3178,1.75,0.52
+['abnormal'],LinearRegression,trees_models,770,6.8281,0.3032,3.3,0.0
+['combine'],Ridge,trees_models,770,6.8316,0.303,1.57,0.01
+['iqr_remove'],DecisionTreeRegressor,linear_models,691,6.8346,0.8036,2.33,0.0
+['combine'],Ridge,linear_models,770,6.8365,0.3269,1.32,0.0
+['combine'],LinearRegression,linear_models,770,6.8368,0.3335,1.71,0.0
+['combine'],LinearRegression,trees_models,770,6.8385,0.3127,3.63,0.0
+"['gost_binar', 'combine']",Lasso,trees_models,770,7.3994,0.3943,2.54,0.01
+"['gost_binar', 'combine']",Lasso,linear_models,770,7.4107,0.4047,1.45,0.0
+['combine'],Lasso,trees_models,770,7.4278,0.3946,1.57,0.0
+['abnormal'],Lasso,trees_models,770,7.4278,0.3946,1.54,0.0
+['combine'],Lasso,linear_models,770,7.4382,0.4084,1.34,0.0
+['abnormal'],Lasso,linear_models,770,7.4382,0.4084,1.72,0.1
+['gost_binar'],Lasso,trees_models,781,7.4402,0.4086,1.67,0.01
+['gost_binar'],Lasso,linear_models,781,7.457,0.4058,1.91,0.0
+['iqr_remove'],ElasticNet,trees_models,691,7.8117,0.5861,1.58,0.0
+['iqr_remove'],ElasticNet,linear_models,691,7.8684,0.5755,2.11,0.0
+"['gost_binar', 'combine']",ElasticNet,trees_models,770,8.1917,0.4295,1.71,0.0
+['gost_binar'],ElasticNet,trees_models,781,8.2093,0.5231,4.29,0.01
+['combine'],ElasticNet,trees_models,770,8.2639,0.4287,1.61,0.0
+['abnormal'],ElasticNet,trees_models,770,8.2662,0.4285,1.57,0.0
+"['gost_binar', 'combine']",ElasticNet,linear_models,770,8.3014,0.47,1.47,0.0
+['gost_binar'],ElasticNet,linear_models,781,8.3183,0.5227,1.38,0.0
+['abnormal'],ElasticNet,linear_models,770,8.3673,0.4635,1.29,0.0
+['combine'],ElasticNet,linear_models,770,8.3686,0.4644,1.34,0.0
