@@ -372,9 +372,8 @@ def save_sorted_modeling_report(config: Dict[str, Any],
     report_path = project_root / config['models_saving']['modeling_report_dir']
     report_path.mkdir(parents=True, exist_ok=True)
 
-    # Генерируем имя файла с временем
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"modeling_experiments_{timestamp}.csv"
+    # Задаем имя файла    
+    filename = f"modeling_experiments.csv"
 
     report_path = report_path / filename 
 
@@ -484,3 +483,39 @@ def save_best_pipeline(best_model: str,
     print(f"Пайплайн сохранен: {pipeline_path}")
     print(f"Метаданные сохранены: {metadata_path}")
     print(f"Лучшая модель: {best_model}, RMSE: {best_row['mean_rmse']:.4f}")
+
+
+
+def load_sorted_modeling_report(config: Dict[str, Any]) -> pd.DataFrame:
+    """
+    Загружает и возвращает отсортированный отчет по моделированию.
+
+    Parameters
+    ----------
+    config : Dict[str, Any]
+        Конфигурационный словарь с путями к данным
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame с результатами экспериментов, отсортированный по метрике
+
+    Raises
+    ------
+    FileNotFoundError
+        Если файл с отчетом не найден
+    """
+    # Получаем путь  
+    project_root = Path(__file__).resolve().parent.parent.parent
+    report_path = project_root / config['models_saving']['modeling_report_dir']    
+    filename = "modeling_experiments.csv"
+    full_report_path = report_path / filename
+
+    # Проверяем существование файла
+    if not full_report_path.exists():
+        raise FileNotFoundError(f"Файл с отчетом не найден: {full_report_path}")
+
+    # Загружаем данные
+    report = pd.read_csv(full_report_path)
+    
+    return report
