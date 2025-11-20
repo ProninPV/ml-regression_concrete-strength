@@ -111,12 +111,45 @@ catboost_params:
     bagging_temperature:
       type: "suggest_float"
       low: 0.0
-      high: 1.0
-  
+      high: 1.0   
   fixed_params:
     verbose: false
     random_state: 42
 
+randomforest_params:
+  search_space:
+    n_estimators:
+      type: "suggest_int"
+      low: 100
+      high: 1000
+    max_depth:
+      type: "suggest_int" 
+      low: 5
+      high: 50
+    min_samples_split:
+      type: "suggest_int"
+      low: 2
+      high: 20
+    min_samples_leaf:
+      type: "suggest_int"
+      low: 1
+      high: 10
+    max_features:
+      type: "suggest_categorical"
+      choices: ["sqrt", "log2", 0.5, 0.7, 0.9]
+    bootstrap:
+      type: "suggest_categorical"
+      choices: [True, False]
+    max_samples:
+      type: "suggest_float"
+      low: 0.5
+      high: 1.0
+  fixed_params:
+    random_state: 42    
+    verbose: false
+
 models:
   catboost:
     param_space: "catboost_params"
+  randomforest:
+    param_space: "randomforest_params"
