@@ -186,7 +186,6 @@ lightgbm_params:
     random_state: 42
     verbose: -1
     
-
 ridge_params:
   search_space:
     alpha:
@@ -198,9 +197,6 @@ ridge_params:
       type: "suggest_categorical"
       choices: ["auto", "svd", "cholesky", "lsqr", "sparse_cg", "sag", "saga"]
     fit_intercept:
-      type: "suggest_categorical"
-      choices: [True, False]
-    normalize:
       type: "suggest_categorical"
       choices: [True, False]
   
