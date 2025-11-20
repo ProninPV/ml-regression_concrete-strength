@@ -148,8 +148,58 @@ randomforest_params:
     random_state: 42    
     verbose: false
 
+
+lightgbm_params:
+  search_space:
+    n_estimators:
+      type: "suggest_int"
+      low: 100
+      high: 2000
+    num_leaves:
+      type: "suggest_int"
+      low: 20
+      high: 150
+    learning_rate:
+      type: "suggest_float"
+      low: 0.01
+      high: 0.3
+      log: true
+    max_depth:
+      type: "suggest_int"
+      low: 3
+      high: 12
+    min_child_samples:
+      type: "suggest_int"
+      low: 5
+      high: 100
+    subsample:
+      type: "suggest_float"
+      low: 0.6
+      high: 1.0
+    colsample_bytree:
+      type: "suggest_float"
+      low: 0.6
+      high: 1.0
+    reg_alpha:
+      type: "suggest_float"
+      low: 0.0
+      high: 1.0
+    reg_lambda:
+      type: "suggest_float"
+      low: 0.0
+      high: 1.0
+  
+  fixed_params:
+    random_state: 42
+    verbose: -1
+    
+
+
+
 models:
   catboost:
     param_space: "catboost_params"
   randomforest:
     param_space: "randomforest_params"
+  lightgbm:
+    param_space: "lightgbm_params"
