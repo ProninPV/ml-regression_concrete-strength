@@ -1,32 +1,186 @@
+abnormal_value:
+  fine_aggregate: 970
+  sp_c_pct: 0.098
 binary_features:
   from_zeros:
   - Blast Furnace Slag
   - Superplasticizer
+catboost_params:
+  fixed_params:
+    random_state: 42
+    verbose: false
+  search_space:
+    bagging_temperature:
+      high: 1.0
+      low: 0.0
+      type: suggest_float
+    border_count:
+      high: 255
+      low: 32
+      type: suggest_int
+    depth:
+      high: 10
+      low: 4
+      type: suggest_int
+    iterations:
+      high: 3000
+      low: 1000
+      type: suggest_int
+    l2_leaf_reg:
+      high: 10
+      low: 1
+      type: suggest_float
+    learning_rate:
+      high: 0.3
+      log: true
+      low: 0.01
+      type: suggest_float
+    random_strength:
+      high: 10
+      low: 0.1
+      type: suggest_float
 competition:
   name: skillbox-ml-junior-regression-11
+cross_validation:
+  n_repeats: 5
+  n_splits: 5
+  random_state: 42
+  strategy: RepeatedKFold
 data:
   logs: logs
   processed_dir: data/processed
   raw_dir: data/raw
   test_file: test.csv
   train_file: train.csv
-output:
-  eda_report_dir: outputs/eda_report  
+ensembles:
+  models_weights:
+  - 0.45
+  - 0.35
+  - 0.2
+lightgbm_params:
+  fixed_params:
+    random_state: 42
+    verbose: -1
+  search_space:
+    colsample_bytree:
+      high: 1.0
+      low: 0.6
+      type: suggest_float
+    learning_rate:
+      high: 0.3
+      log: true
+      low: 0.01
+      type: suggest_float
+    max_depth:
+      high: 12
+      low: 3
+      type: suggest_int
+    min_child_samples:
+      high: 100
+      low: 5
+      type: suggest_int
+    n_estimators:
+      high: 2000
+      low: 100
+      type: suggest_int
+    num_leaves:
+      high: 150
+      low: 20
+      type: suggest_int
+    reg_alpha:
+      high: 1.0
+      low: 0.0
+      type: suggest_float
+    reg_lambda:
+      high: 1.0
+      low: 0.0
+      type: suggest_float
+    subsample:
+      high: 1.0
+      low: 0.6
+      type: suggest_float
+models:
+  catboost:
+    param_space: catboost_params
+  lightgbm:
+    param_space: lightgbm_params
+  randomforest:
+    param_space: randomforest_params
+  ridge:
+    param_space: ridge_params
+  xgboost:
+    param_space: xgboost_params
 models_saving:
-  modeling_report_dir: models/modeling_report
   best_pipeline_dir: models/pipelines
-processed_files:  
-  train_file:
-    csv: eda_data_train.csv
-    pkl: eda_data_train.pkl
-    parquet: eda_data_train.parquet
+  modeling_report_dir: models/modeling_report
+optuna:
+  direction: minimize
+  n_trials: 100
+output:
+  eda_report_dir: outputs/eda_report
+processed_files:
   test_file:
     csv: eda_data_test.csv
-    pkl: eda_data_test.pkl
     parquet: eda_data_test.parquet
-abnormal_value:
-  sp_c_pct: 0.098
-  fine_aggregate: 970
+    pkl: eda_data_test.pkl
+  train_file:
+    csv: eda_data_train.csv
+    parquet: eda_data_train.parquet
+    pkl: eda_data_train.pkl
+randomforest_params:
+  fixed_params:
+    random_state: 42
+    verbose: false
+  search_space:
+    max_depth:
+      high: 50
+      low: 5
+      type: suggest_int
+    max_features:
+      choices:
+      - sqrt
+      - log2
+      - 0.5
+      - 0.7
+      - 0.9
+      type: suggest_categorical
+    min_samples_leaf:
+      high: 10
+      low: 1
+      type: suggest_int
+    min_samples_split:
+      high: 20
+      low: 2
+      type: suggest_int
+    n_estimators:
+      high: 1000
+      low: 100
+      type: suggest_int
+ridge_params:
+  fixed_params:
+    copy_X: true
+    random_state: 42
+  search_space:
+    alpha:
+      high: 100.0
+      log: true
+      low: 0.1
+      type: suggest_float
+    fit_intercept:
+      choices:
+      - true
+      - false
+      type: suggest_categorical
+    solver:
+      choices:
+      - auto
+      - svd
+      - cholesky
+      - lsqr
+      - sparse_cg
+      - sag
+      - saga
+      type: suggest_categorical
 standard_value:
   age:
     max: 365
@@ -69,193 +223,41 @@ trend_settings:
   - Sqrt
   - 1/x
   - "x\xB2"
-
-
-optuna:
-  direction: "minimize"
-  n_trials: 100
-  
-cross_validation:
-  strategy: "RepeatedKFold"
-  n_splits: 5
-  n_repeats: 5
-  random_state: 42
-
-catboost_params:
-  search_space:
-    iterations:
-      type: "suggest_int"
-      low: 1000
-      high: 3000
-    depth:
-      type: "suggest_int" 
-      low: 4
-      high: 10
-    learning_rate:
-      type: "suggest_float"
-      low: 0.01
-      high: 0.3
-      log: true
-    l2_leaf_reg:
-      type: "suggest_float"
-      low: 1
-      high: 10
-    random_strength:
-      type: "suggest_float"
-      low: 0.1
-      high: 10
-    border_count:
-      type: "suggest_int"
-      low: 32
-      high: 255
-    bagging_temperature:
-      type: "suggest_float"
-      low: 0.0
-      high: 1.0   
-  fixed_params:
-    verbose: false
-    random_state: 42
-
-randomforest_params:
-  search_space:
-    n_estimators:
-      type: "suggest_int"
-      low: 100
-      high: 1000
-    max_depth:
-      type: "suggest_int" 
-      low: 5
-      high: 50
-    min_samples_split:
-      type: "suggest_int"
-      low: 2
-      high: 20
-    min_samples_leaf:
-      type: "suggest_int"
-      low: 1
-      high: 10
-    max_features:
-      type: "suggest_categorical"
-      choices: ["sqrt", "log2", 0.5, 0.7, 0.9]
-  fixed_params:
-    random_state: 42    
-    verbose: false
-
-
-lightgbm_params:
-  search_space:
-    n_estimators:
-      type: "suggest_int"
-      low: 100
-      high: 2000
-    num_leaves:
-      type: "suggest_int"
-      low: 20
-      high: 150
-    learning_rate:
-      type: "suggest_float"
-      low: 0.01
-      high: 0.3
-      log: true
-    max_depth:
-      type: "suggest_int"
-      low: 3
-      high: 12
-    min_child_samples:
-      type: "suggest_int"
-      low: 5
-      high: 100
-    subsample:
-      type: "suggest_float"
-      low: 0.6
-      high: 1.0
-    colsample_bytree:
-      type: "suggest_float"
-      low: 0.6
-      high: 1.0
-    reg_alpha:
-      type: "suggest_float"
-      low: 0.0
-      high: 1.0
-    reg_lambda:
-      type: "suggest_float"
-      low: 0.0
-      high: 1.0
-  
-  fixed_params:
-    random_state: 42
-    verbose: -1
-    
-ridge_params:
-  search_space:
-    alpha:
-      type: "suggest_float"
-      low: 0.1
-      high: 100.0
-      log: true
-    solver:
-      type: "suggest_categorical"
-      choices: ["auto", "svd", "cholesky", "lsqr", "sparse_cg", "sag", "saga"]
-    fit_intercept:
-      type: "suggest_categorical"
-      choices: [True, False]
-  
-  fixed_params:
-    random_state: 42
-    copy_X: true
-
 xgboost_params:
+  fixed_params:
+    random_state: 42
+    verbosity: 0
   search_space:
-    n_estimators:
-      type: "suggest_int"
-      low: 100
-      high: 2000
-    max_depth:
-      type: "suggest_int"
-      low: 3
-      high: 12
+    colsample_bytree:
+      high: 1.0
+      low: 0.6
+      type: suggest_float
+    gamma:
+      high: 0.5
+      low: 0.0
+      type: suggest_float
     learning_rate:
-      type: "suggest_float"
-      low: 0.01
       high: 0.3
       log: true
-    subsample:
-      type: "suggest_float"
-      low: 0.6
-      high: 1.0
-    colsample_bytree:
-      type: "suggest_float"
-      low: 0.6
-      high: 1.0
+      low: 0.01
+      type: suggest_float
+    max_depth:
+      high: 12
+      low: 3
+      type: suggest_int
+    n_estimators:
+      high: 2000
+      low: 100
+      type: suggest_int
     reg_alpha:
-      type: "suggest_float"
-      low: 0.0
       high: 1.0
+      low: 0.0
+      type: suggest_float
     reg_lambda:
-      type: "suggest_float"
-      low: 0.0
       high: 1.0
-    gamma:
-      type: "suggest_float"
       low: 0.0
-      high: 0.5
-  
-  fixed_params:
-    random_state: 42    
-    verbosity: 0
-
-models:
-  catboost:
-    param_space: "catboost_params"
-  randomforest:
-    param_space: "randomforest_params"
-  lightgbm:
-    param_space: "lightgbm_params"
-  ridge:
-    param_space: "ridge_params"
-  xgboost:
-    param_space: "xgboost_params"
-
-
-ensembles:
-  models_weights: [0.45, 0.35, 0.20]
+      type: suggest_float
+    subsample:
+      high: 1.0
+      low: 0.6
+      type: suggest_float
