@@ -485,7 +485,6 @@ def save_best_pipeline(best_model: str,
     print(f"Лучшая модель: {best_model}, RMSE: {best_row['mean_rmse']:.4f}")
 
 
-
 def load_sorted_modeling_report(config: Dict[str, Any]) -> pd.DataFrame:
     """
     Загружает и возвращает отсортированный отчет по моделированию.

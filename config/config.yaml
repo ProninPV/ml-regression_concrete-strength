@@ -3,7 +3,7 @@ binary_features:
   - Blast Furnace Slag
   - Superplasticizer
 competition:
-  name: skillbox-ml-junior-regression-10
+  name: skillbox-ml-junior-regression-11
 data:
   logs: logs
   processed_dir: data/processed
