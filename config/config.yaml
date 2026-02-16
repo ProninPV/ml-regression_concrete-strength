@@ -40,7 +40,7 @@ catboost_params:
       low: 0.1
       type: suggest_float
 competition:
-  name: skillbox-ml-junior-regression-11
+  name: skillbox-ml-junior-regression-12
 cross_validation:
   n_repeats: 5
   n_splits: 5
